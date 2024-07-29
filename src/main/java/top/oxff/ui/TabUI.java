@@ -105,11 +105,7 @@ public class TabUI extends JPanel {
 
         tableModel = new DefaultTableModel() {
             public boolean isCellEditable(int row, int col) {
-                if (col == 2) {
-                    return false;
-                } else {
-                    return true;
-                }
+                return col != 2;
             }
         };
 
