@@ -6,12 +6,8 @@ import top.oxff.util.RowItem;
 //import com.sun.org.apache.xpath.internal.operations.String;
 
 import javax.swing.*;
-import javax.swing.event.TableModelEvent;
-import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.ArrayList;
@@ -26,6 +22,9 @@ public class TabUI extends JPanel {
     JCheckBox proxyCheckbox;
     JCheckBox repeatCheckbox;
     JCheckBox intruderCheckbox;
+
+    // for IBurpExtenderCallbacks.TOOL_EXTENDER
+    JCheckBox extenderCheckbox;
 
     JScrollPane centerPanel;
 
@@ -60,41 +59,43 @@ public class TabUI extends JPanel {
 
         intruderCheckbox = new JCheckBox("intruder");
 
+        extenderCheckbox = new JCheckBox("extender");
+
         northPanel.add(label);
         northPanel.add(proxyCheckbox);
         northPanel.add(repeatCheckbox);
         northPanel.add(intruderCheckbox);
+        northPanel.add(extenderCheckbox);
 
-        proxyCheckbox.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if (proxyCheckbox.isSelected()) {
-                    BurpExtender.Tool_flags.add(IBurpExtenderCallbacks.TOOL_PROXY);
-                } else {
-                    BurpExtender.Tool_flags.remove(IBurpExtenderCallbacks.TOOL_PROXY);
-                }
+        proxyCheckbox.addActionListener(e -> {
+            if (proxyCheckbox.isSelected()) {
+                BurpExtender.Tool_flags.add(IBurpExtenderCallbacks.TOOL_PROXY);
+            } else {
+                BurpExtender.Tool_flags.remove(IBurpExtenderCallbacks.TOOL_PROXY);
             }
         });
 
-        repeatCheckbox.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if (repeatCheckbox.isSelected()) {
-                    BurpExtender.Tool_flags.add(IBurpExtenderCallbacks.TOOL_REPEATER);
-                } else {
-                    BurpExtender.Tool_flags.remove(IBurpExtenderCallbacks.TOOL_REPEATER);
-                }
+        repeatCheckbox.addActionListener(e -> {
+            if (repeatCheckbox.isSelected()) {
+                BurpExtender.Tool_flags.add(IBurpExtenderCallbacks.TOOL_REPEATER);
+            } else {
+                BurpExtender.Tool_flags.remove(IBurpExtenderCallbacks.TOOL_REPEATER);
             }
         });
 
-        intruderCheckbox.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if (intruderCheckbox.isSelected()) {
-                    BurpExtender.Tool_flags.add(IBurpExtenderCallbacks.TOOL_INTRUDER);
-                } else {
-                    BurpExtender.Tool_flags.remove(IBurpExtenderCallbacks.TOOL_INTRUDER);
-                }
+        intruderCheckbox.addActionListener(e -> {
+            if (intruderCheckbox.isSelected()) {
+                BurpExtender.Tool_flags.add(IBurpExtenderCallbacks.TOOL_INTRUDER);
+            } else {
+                BurpExtender.Tool_flags.remove(IBurpExtenderCallbacks.TOOL_INTRUDER);
+            }
+        });
+
+        extenderCheckbox.addActionListener(e-> {
+            if (extenderCheckbox.isSelected()) {
+                BurpExtender.Tool_flags.add(IBurpExtenderCallbacks.TOOL_EXTENDER);
+            } else {
+                BurpExtender.Tool_flags.remove(IBurpExtenderCallbacks.TOOL_EXTENDER);
             }
         });
 
@@ -111,53 +112,30 @@ public class TabUI extends JPanel {
 
         tableModel.setColumnIdentifiers(tableHeader);
 
-        tableModel.addTableModelListener(new TableModelListener() {
-            @Override
-            public void tableChanged(TableModelEvent e) {
-//                int lastRow = e.getLastRow();
-//
-//                if (lastRow < 0) {
-//                    return;
-//                }
-//
-//                String k = (String) tableModel.getValueAt(lastRow, 0);
-//                String v = (String) tableModel.getValueAt(lastRow, 1);
-//                String ev = (String) tableModel.getValueAt(lastRow, 2);
-////                String dv = (String) tableModel.getValueAt(lastRow, 0);
-//
-//                if ((null == k || null == v || null == ev) || (k.trim().isEmpty() || v.trim().isEmpty() || ev.trim().isEmpty()) || !ev.trim().equals("是")) {
-//                    return;
-//                }
-//
-//                if (BurpExtender.KVS.containsKey(k)) {
-//                    BurpExtender.KVS.replace(k, v);
-//                } else {
-//                    BurpExtender.KVS.put(k, v);
-//                }
+        tableModel.addTableModelListener(e -> {
 
-                if(tableModel.getRowCount() <= 0){
-                    return;
+            if(tableModel.getRowCount() <= 0){
+                return;
+            }
+
+            Map<String, String> tmpKvs = new HashMap<>();
+
+            for (int i = 0; i < tableModel.getRowCount(); i++) {
+                String k = (String) tableModel.getValueAt(i, 0);
+                String v = (String) tableModel.getValueAt(i, 1);
+                String enable = (String) tableModel.getValueAt(i, 2);
+
+                if(null == enable || (!enable.equals("是")) || (null == k || null == v || k.trim().isEmpty() || v.trim().isEmpty())){
+                    continue;
                 }
 
-                Map<String, String> tmpKvs = new HashMap<>();
-
-                for (int i = 0; i < tableModel.getRowCount(); i++) {
-                    String k = (String) tableModel.getValueAt(i, 0);
-                    String v = (String) tableModel.getValueAt(i, 1);
-                    String enable = (String) tableModel.getValueAt(i, 2);
-
-                    if(null == enable || (!enable.equals("是")) || (null == k || null == v || k.trim().isEmpty() || v.trim().isEmpty())){
-                        continue;
-                    }
-
-                    tmpKvs.put(k.trim(), v.trim());
-
-                }
-                BurpExtender.KVS.clear();
-                BurpExtender.KVS.putAll(tmpKvs);
-
+                tmpKvs.put(k.trim(), v.trim());
 
             }
+            BurpExtender.KVS.clear();
+            BurpExtender.KVS.putAll(tmpKvs);
+
+
         });
 
         table.setModel(tableModel);
@@ -211,38 +189,27 @@ public class TabUI extends JPanel {
         addBtn = new JButton("新增");
         delBtn = new JButton("删除");
 
-        addBtn.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                String[] item = new java.lang.String[]{"", "", "是/否", ""};
-                tableModel.addRow(item);
-            }
+        addBtn.addActionListener(e -> {
+            String[] item = new String[]{"", "", "是/否", ""};
+            tableModel.addRow(item);
         });
 
-        delBtn.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                int[] selectedRows = table.getSelectedRows();
-                if (null == selectedRows || 0 == selectedRows.length) {
-                    return;
+        delBtn.addActionListener(e -> {
+            int[] selectedRows = table.getSelectedRows();
+            if (null == selectedRows || 0 == selectedRows.length) {
+                return;
+            }
+
+            for (int selectedRow : selectedRows) {
+                tableModel.removeRow(selectedRow);
+                SwingUtilities.invokeLater(() -> tableModel.fireTableDataChanged());
+
+                String k = (String) tableModel.getValueAt(selectedRow, 0);
+                if (null != k && !k.isEmpty()){
+                    BurpExtender.KVS.remove(k);
                 }
 
-                for (int selectedRow : selectedRows) {
-                    tableModel.removeRow(selectedRow);
-                    SwingUtilities.invokeLater(new Runnable() {
-                        @Override
-                        public void run() {
-                            tableModel.fireTableDataChanged();
-                        }
-                    });
 
-                    String k = (java.lang.String) tableModel.getValueAt(selectedRow, 0);
-                    if (null != k && !k.isEmpty()){
-                        BurpExtender.KVS.remove(k);
-                    }
-
-
-                }
             }
         });
 
@@ -256,31 +223,25 @@ public class TabUI extends JPanel {
         enableBtn = new JButton("生效");
         disableBtn = new JButton("失效");
 
-        enableBtn.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                int[] selectedRows = table.getSelectedRows();
-                if (null == selectedRows || 0 == selectedRows.length) {
-                    return;
-                }
+        enableBtn.addActionListener(e -> {
+            int[] selectedRows = table.getSelectedRows();
+            if (null == selectedRows || 0 == selectedRows.length) {
+                return;
+            }
 
-                for (int selectedRow : selectedRows) {
-                    tableModel.setValueAt("是", selectedRow, 2);
-                }
+            for (int selectedRow : selectedRows) {
+                tableModel.setValueAt("是", selectedRow, 2);
             }
         });
 
-        disableBtn.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                int[] selectedRows = table.getSelectedRows();
-                if (null == selectedRows || 0 == selectedRows.length) {
-                    return;
-                }
+        disableBtn.addActionListener(e -> {
+            int[] selectedRows = table.getSelectedRows();
+            if (null == selectedRows || 0 == selectedRows.length) {
+                return;
+            }
 
-                for (int selectedRow : selectedRows) {
-                    tableModel.setValueAt("否", selectedRow, 2);
-                }
+            for (int selectedRow : selectedRows) {
+                tableModel.setValueAt("否", selectedRow, 2);
             }
         });
 

@@ -6,7 +6,7 @@
 
     <groupId>top.oxff</groupId>
     <artifactId>changeHeaders</artifactId>
-    <version>1.5-SNAPSHOT</version>
+    <version>1.5.1</version>
 
     <properties>
         <maven.compiler.source>8</maven.compiler.source>

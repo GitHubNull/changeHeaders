@@ -10,7 +10,7 @@ import java.util.*;
 import java.util.List;
 
 public class BurpExtender implements IBurpExtender, ITab, IHttpListener, IExtensionStateListener {
-    final static String NAME = "changeHeaders";
+    final static String NAME = "changeHeaders v1.5.1";
 
     public static IBurpExtenderCallbacks burpExtenderCallbacks;
 
@@ -106,8 +106,6 @@ public class BurpExtender implements IBurpExtender, ITab, IHttpListener, IExtens
     private void loadExConfig() {
         String KVS_EX_Setting_str = burpExtenderCallbacks.loadExtensionSetting(KVS_EX_NAME);
         // base64 decode and then load
-//        KVS_EX_Setting_str = new String(Base64.getDecoder().decode(KVS_EX_Setting_str));
-//        stdout.println(String.format("KVS_EX_Setting_str --> %s", KVS_EX_Setting_str));
         if (null != KVS_EX_Setting_str && !KVS_EX_Setting_str.trim().isEmpty() && KVS_EX_Setting_str.contains(KVS_SEP)) {
             String[] KVS_EX_Setting_items;
             if (KVS_EX_Setting_str.contains(SEP)) {
@@ -160,7 +158,7 @@ public class BurpExtender implements IBurpExtender, ITab, IHttpListener, IExtens
         if (!Tool_flags.contains(toolFlag)) {
 //            stdout.println("BurpExtender  -->154");
             return;
-        } else if (!messageIsRequest || null == httpRequestResponse || 0 == KVS.size()) {
+        } else if (!messageIsRequest || null == httpRequestResponse || KVS.isEmpty()) {
 //            stdout.println("BurpExtender  -->154");
             return;
         }
@@ -177,21 +175,9 @@ public class BurpExtender implements IBurpExtender, ITab, IHttpListener, IExtens
 
         List<String> headers = requestInfo.getHeaders();
 
-        if (0 == headers.size()) {
+        if (headers.isEmpty()) {
             return;
         }
-
-//        for (String k : KVS.keySet()) {
-//
-//            for (String header : headers) {
-//                if (header.contains(k)) {
-//                    headers.remove(header);
-//                    break;
-//                }
-//            }
-//            headers.add(String.format("%s: %s", k, KVS.get(k)));
-//
-//        }
 
         List<String> tmpHeaders = new ArrayList<>(headers);
         Map<String, Integer> kvsCntMap = new HashMap<>();
