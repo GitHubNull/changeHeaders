@@ -21,9 +21,9 @@ public class ContextMenuFactoryIml implements IContextMenuFactory {
     }
 
     private JMenuItem genMenuItem(String[] selectLines) {
-        JMenuItem menuItem = new JMenuItem(); // "[changeHeaders] 新增"
+        JMenuItem menuItem = new JMenuItem();
 
-        String title = "[changeHeaders] 新增";
+        String title = "新增";
         Set<Option> optionSet = new HashSet<>();
 //        optionSet.add(Option.ADD);
         for (String selectLine : selectLines) {
@@ -49,9 +49,9 @@ public class ContextMenuFactoryIml implements IContextMenuFactory {
             }
         }
         if (optionSet.contains(Option.ADD_AND_UPDATE)) {
-            title = "[changeHeaders] 新增 & 更新";
+            title = "新增 & 更新";
         } else if (optionSet.contains(Option.UPDATE)) {
-            title = "[changeHeaders] 更新";
+            title = "更新";
         }
         menuItem.setText(title);
 
@@ -88,13 +88,11 @@ public class ContextMenuFactoryIml implements IContextMenuFactory {
         int[] selection = contextMenuInvocation.getSelectionBounds();
         IHttpRequestResponse[] selectedMessages = contextMenuInvocation.getSelectedMessages();
 
-
         if (!contextSet.contains(contextMenuInvocation.getInvocationContext()) ||
                 (null == selectedMessages || null == selection) || (1 >= selection.length) ||
                 0 == selectedMessages.length) {
             return menuItems;
         }
-
 
         IHttpRequestResponse httpRequestResponse = selectedMessages[0];
         if (null == httpRequestResponse) {
@@ -121,11 +119,9 @@ public class ContextMenuFactoryIml implements IContextMenuFactory {
             return menuItems;
         }
 
-
         JMenuItem menuItem = genMenuItem(selectLines);
 
         menuItems.add(menuItem);
-
 
         return menuItems;
     }
