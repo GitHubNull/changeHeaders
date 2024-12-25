@@ -3,10 +3,13 @@ package top.oxff.control;
 import top.oxff.model.HeaderItem;
 import top.oxff.service.HeaderItemService;
 
-public class headerItemControler {
+import java.util.List;
+import java.util.Map;
+
+public class HeaderItemController {
     public static int addHeaderItem(String key, String value, String description, boolean proxyEnable,
-                                     boolean repeaterEnable, boolean intruderEnable, boolean scannerEnable,
-                                     boolean extenderEnable) {
+                                    boolean repeaterEnable, boolean intruderEnable, boolean scannerEnable,
+                                    boolean extenderEnable) {
         HeaderItem headerItem = new HeaderItem();
         headerItem.setKey(key);
         headerItem.setValue(value);
@@ -149,4 +152,62 @@ public class headerItemControler {
     public static void deleteAllHeaderItem() {
         HeaderItemService.clear();
     }
+
+    public static int getHeaderItemCount() {
+        return HeaderItemService.getHeaderItemListSize();
+    }
+
+    public static Object getHeaderItemValue(int rowIndex, int columnIndex) {
+        HeaderItem headerItem = HeaderItemService.getHeaderItemByIndex(rowIndex);
+        if (null == headerItem) {
+            return null;
+        }
+        switch (columnIndex) {
+            case 0:
+                return headerItem.getId();
+            case 1:
+                return headerItem.getKey();
+            case 2:
+                return headerItem.getValue();
+            case 3:
+                return headerItem.isProxyEnable();
+            case 4:
+                return headerItem.isRepeaterEnable();
+            case 5:
+                return headerItem.isIntruderEnable();
+            case 6:
+                return headerItem.isScannerEnable();
+            case 7:
+                return headerItem.isExtenderEnable();
+            case 8:
+                return headerItem.getDescription();
+            default:
+                return null;
+        }
+    }
+
+    public static List<HeaderItem> getHeaderItemList(){
+    	return HeaderItemService.getHeaderItemList();
+    }
+
+    public static void setHeaderItemList(List<HeaderItem> headerItemList){
+    	HeaderItemService.setHeaderItemList(headerItemList);
+    }
+
+    public static Map<String, Integer> getKeyMap(){
+    	return HeaderItemService.getKeyMap();
+    }
+
+    public static void setKeyMap(Map<String, Integer> keyMap){
+    	HeaderItemService.setKeyMap(keyMap);
+    }
+
+    public static void addHeaderItem(HeaderItem headerItem) {
+        HeaderItemService.addHeaderItem(headerItem);
+    }
+
+    public boolean isExist(String key){
+        return HeaderItemService.isExist(key);
+    }
+
 }
