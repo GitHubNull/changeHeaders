@@ -21,16 +21,12 @@ public class HeaderItemTableModel extends AbstractTableModel {
         fireTableDataChanged();
     }
 
-    public void setHeaderItemList(List<HeaderItem> headerItemList) {
-        HeaderItemController.setHeaderItemList(headerItemList);
+    public Map<String, Integer> getKeyMap() {
+        return HeaderItemController.getKeyMap();
     }
 
     public void setKeyMap(Map<String, Integer> keyMap) {
         HeaderItemController.setKeyMap(keyMap);
-    }
-
-    public Map<String, Integer> getKeyMap() {
-        return HeaderItemController.getKeyMap();
     }
 
     @Override
@@ -125,6 +121,10 @@ public class HeaderItemTableModel extends AbstractTableModel {
                 HeaderItemController.enableExtender((boolean) aValue, oldHeaderItem);
                 fireTableCellUpdated(rowIndex, columnIndex);
                 break;
+            case 8:
+                HeaderItemController.updateHeaderItem(oldHeaderItem, oldHeaderItem.getKey(), oldHeaderItem.getValue(), (String) aValue, oldHeaderItem.isProxyEnable(), oldHeaderItem.isRepeaterEnable(), oldHeaderItem.isIntruderEnable(), oldHeaderItem.isScannerEnable(), oldHeaderItem.isExtenderEnable());
+                fireTableCellUpdated(rowIndex, columnIndex);
+                break;
             default:
                 break;
         }
@@ -150,9 +150,13 @@ public class HeaderItemTableModel extends AbstractTableModel {
         return HeaderItemController.getHeaderItemList();
     }
 
+    public void setHeaderItemList(List<HeaderItem> headerItemList) {
+        HeaderItemController.setHeaderItemList(headerItemList);
+    }
+
     public boolean isEnableTool(int toolFlag, String key) {
         HeaderItem headerItem = getHeaderItemByKey(key);
-        if (headerItem == null){
+        if (headerItem == null) {
             return false;
         }
         return headerItem.isEnableTool(toolFlag);
