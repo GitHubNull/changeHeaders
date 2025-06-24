@@ -7,6 +7,7 @@ import top.oxff.model.ExtenderConfig;
 import top.oxff.model.HeaderItemTableModel;
 import top.oxff.ui.TabUI;
 
+import javax.swing.*;
 import java.awt.*;
 import java.io.PrintWriter;
 import java.util.*;
@@ -50,7 +51,7 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
         BurpExtender.burpExtenderCallbacks.registerContextMenuFactory(contextMenuFactoryIml);
         BurpExtender.burpExtenderCallbacks.registerExtensionStateListener(this);
 
-        loadExConfig();
+        SwingUtilities.invokeLater(this::loadExConfig);
     }
 
 

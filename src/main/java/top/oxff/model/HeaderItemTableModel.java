@@ -152,6 +152,7 @@ public class HeaderItemTableModel extends AbstractTableModel {
 
     public void setHeaderItemList(List<HeaderItem> headerItemList) {
         HeaderItemController.setHeaderItemList(headerItemList);
+        fireTableDataChanged();
     }
 
     public boolean isEnableTool(int toolFlag, String key) {
