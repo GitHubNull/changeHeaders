@@ -54,6 +54,11 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
         BurpExtender.burpExtenderCallbacks.registerExtensionStateListener(this);
 
         SwingUtilities.invokeLater(this::loadExConfig);
+
+        // 输出作者版本等信息
+        logInfo("Author: " + "oxff01");
+        logInfo("Version: " + "1.9.0");
+        logInfo("Github: " + "https://github.com/oxff01/changeHeaders");
     }
 
 
