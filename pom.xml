@@ -35,12 +35,6 @@
             <groupId>com.alibaba.fastjson2</groupId>
             <artifactId>fastjson2</artifactId>
             <version>2.0.53</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>com.alibaba.fastjson2</groupId>
-                    <artifactId>fastjson2</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
 
 
@@ -72,8 +66,69 @@
         </pluginRepository>
     </pluginRepositories>
 
+    <profiles>
+        <profile>
+            <id>debug-build</id>
+            <activation>
+                <property>
+                    <name>debug.build</name>
+                    <value>true</value>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <version>3.1.0</version>
+                        <executions>
+                            <execution>
+                                <id>copy-with-timestamp</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                                <configuration>
+                                    <target>
+                                        <tstamp>
+                                            <format property="timestamp" pattern="yyyyMMddHHmmss"/>
+                                        </tstamp>
+                                        <echo message="Copying JAR with timestamp because debug is enabled"/>
+                                        <copy file="${project.build.directory}/${project.artifactId}-${project.version}.jar" 
+                                              tofile="${project.build.directory}/${project.artifactId}-${project.version}-${timestamp}.jar"/>
+                                    </target>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+
     <build>
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.8.1</version>
+                <configuration>
+                    <source>8</source>
+                    <target>8</target>
+                </configuration>
+            </plugin>
+            
+            <!-- 配置maven-jar-plugin跳过默认JAR构建 -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.4.1</version>
+                <configuration>
+                    <skipIfEmpty>true</skipIfEmpty>
+                </configuration>
+            </plugin>
+            
+            <!-- 配置maven-shade-plugin插件生成包含所有依赖的单一JAR文件 -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
@@ -85,21 +140,63 @@
                             <goal>shade</goal>
                         </goals>
                         <configuration>
+                            <!-- 设置主类 -->
+                            <transformers>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                    <manifestEntries>
+                                        <Main-Class>burp.BurpExtender</Main-Class>
+                                    </manifestEntries>
+                                </transformer>
+                            </transformers>
+                            
+                            <!-- 过滤掉不需要的文件 -->
                             <filters>
                                 <filter>
                                     <artifact>*:*</artifact>
                                     <excludes>
+                                        <exclude>META-INF/*.SF</exclude>
+                                        <exclude>META-INF/*.DSA</exclude>
+                                        <exclude>META-INF/*.RSA</exclude>
                                         <exclude>META-INF/MANIFEST.MF</exclude>
                                     </excludes>
                                 </filter>
                             </filters>
+                            
+                            <!-- 不生成dependency-reduced-pom.xml文件 -->
+                            <createDependencyReducedPom>false</createDependencyReducedPom>
+                            
+                            <!-- 不附加shaded分类器 -->
+                            <shadedArtifactAttached>false</shadedArtifactAttached>
+                            
+                            <!-- 不最小化JAR -->
+                            <minimizeJar>false</minimizeJar>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            
+            <!-- 添加一个插件，在构建完成后删除original-*.jar文件 -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>3.1.0</version>
+                <executions>
+                    <execution>
+                        <id>delete-original-jar</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <target>
+                                <delete>
+                                    <fileset dir="${project.build.directory}" includes="original-*.jar"/>
+                                </delete>
+                            </target>
                         </configuration>
                     </execution>
                 </executions>
             </plugin>
         </plugins>
     </build>
-
-
-
 </project>
