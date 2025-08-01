@@ -9,13 +9,9 @@ import top.oxff.model.HeaderItem;
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.nio.file.Files;
 
 import static burp.BurpExtender.TOOL_FLAGS;
 import static burp.BurpExtender.tableModel;
@@ -165,19 +161,9 @@ public class TabUI extends JPanel {
         exportConfigBtn = new JButton("导出配置");
         importConfigBtn = new JButton("导入配置");
         
-        exportConfigBtn.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                exportConfig();
-            }
-        });
+        exportConfigBtn.addActionListener(e -> exportConfig());
         
-        importConfigBtn.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                importConfig();
-            }
-        });
+        importConfigBtn.addActionListener(e -> importConfig());
 
         optPanel1.add(addBtn);
         optPanel1.add(delBtn);
@@ -248,25 +234,56 @@ public class TabUI extends JPanel {
         if (userSelection == JFileChooser.APPROVE_OPTION) {
             File fileToSave = fileChooser.getSelectedFile();
             
+            // 检查文件名是否为空
+            if (fileToSave == null || fileToSave.getName().trim().isEmpty()) {
+                JOptionPane.showMessageDialog(this, "文件名不能为空！", "导出失败", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            
             // 确保文件有.json扩展名
             if (!fileToSave.getAbsolutePath().endsWith(".json")) {
                 fileToSave = new File(fileToSave + ".json");
             }
             
+            // 检查文件是否可写
+            if (fileToSave.exists() && !fileToSave.canWrite()) {
+                JOptionPane.showMessageDialog(this, "无法写入文件: " + fileToSave.getAbsolutePath(), "导出失败", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            
             try {
                 ExtenderConfig config = getExtenderConfig();
+                
+                // 检查配置是否为空
+                if (config == null) {
+                    JOptionPane.showMessageDialog(this, "当前没有可导出的配置！", "导出失败", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+                
                 // 序列化为JSON字符串
                 String jsonString = com.alibaba.fastjson2.JSON.toJSONString(config);
                 
+                // 检查JSON字符串是否为空
+                if (jsonString == null || jsonString.isEmpty()) {
+                    JOptionPane.showMessageDialog(this, "配置序列化失败！", "导出失败", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+                
                 // 使用OutputStreamWriter以UTF-8编码写入文件
-                try (OutputStreamWriter writer = new OutputStreamWriter(new FileOutputStream(fileToSave), StandardCharsets.UTF_8)) {
+                try (OutputStreamWriter writer = new OutputStreamWriter(Files.newOutputStream(fileToSave.toPath()), StandardCharsets.UTF_8)) {
                     writer.write(jsonString);
                 }
                 
-                JOptionPane.showMessageDialog(this, "配置导出成功！", "导出成功", JOptionPane.INFORMATION_MESSAGE);
+                JOptionPane.showMessageDialog(this, "配置导出成功！\n文件位置: " + fileToSave.getAbsolutePath(), "导出成功", JOptionPane.INFORMATION_MESSAGE);
+            } catch (SecurityException ex) {
+                JOptionPane.showMessageDialog(this, "没有权限写入文件: " + ex.getMessage(), "导出失败", JOptionPane.ERROR_MESSAGE);
+                BurpExtender.logError( ex.getLocalizedMessage());
+            } catch (IOException ex) {
+                JOptionPane.showMessageDialog(this, "文件写入失败: " + ex.getMessage(), "导出失败", JOptionPane.ERROR_MESSAGE);
+                BurpExtender.logError( ex.getLocalizedMessage());
             } catch (Exception ex) {
                 JOptionPane.showMessageDialog(this, "导出配置失败: " + ex.getMessage(), "导出失败", JOptionPane.ERROR_MESSAGE);
-                ex.printStackTrace();
+                BurpExtender.logError( ex.getLocalizedMessage());
             }
         }
     }
@@ -285,18 +302,62 @@ public class TabUI extends JPanel {
         if (userSelection == JFileChooser.APPROVE_OPTION) {
             File selectedFile = fileChooser.getSelectedFile();
             
+            // 检查文件是否存在
+            if (selectedFile == null || !selectedFile.exists()) {
+                JOptionPane.showMessageDialog(this, "选择的文件不存在！", "导入失败", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            
+            // 检查文件是否可读
+            if (!selectedFile.canRead()) {
+                JOptionPane.showMessageDialog(this, "无法读取文件: " + selectedFile.getAbsolutePath(), "导入失败", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            
+            // 检查文件扩展名
+            if (!selectedFile.getName().toLowerCase().endsWith(".json")) {
+                int option = JOptionPane.showConfirmDialog(this,
+                        "选择的文件不是JSON格式，是否继续导入？",
+                        "文件格式警告",
+                        JOptionPane.YES_NO_OPTION,
+                        JOptionPane.WARNING_MESSAGE);
+                if (option != JOptionPane.YES_OPTION) {
+                    return;
+                }
+            }
+            
+            // 检查文件大小（防止过大的文件）
+            long fileSize = selectedFile.length();
+            if (fileSize > 10 * 1024 * 1024) { // 10MB
+                JOptionPane.showMessageDialog(this, "配置文件过大（超过10MB），无法导入！", "导入失败", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            
             try {
                 // 使用InputStreamReader以UTF-8编码读取文件
                 StringBuilder jsonString = new StringBuilder();
                 char[] buffer = new char[1024];
                 int length;
-                try (InputStreamReader reader = new InputStreamReader(new FileInputStream(selectedFile), StandardCharsets.UTF_8)) {
+                try (InputStreamReader reader = new InputStreamReader(Files.newInputStream(selectedFile.toPath()), StandardCharsets.UTF_8)) {
                     while ((length = reader.read(buffer)) != -1) {
                         jsonString.append(buffer, 0, length);
                     }
                 }
                 
+                // 检查读取的内容是否为空
+                if (jsonString.toString().trim().isEmpty()) {
+                    JOptionPane.showMessageDialog(this, "配置文件内容为空！", "导入失败", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+                
+                // 解析JSON
                 ExtenderConfig config = com.alibaba.fastjson2.JSON.parseObject(jsonString.toString(), ExtenderConfig.class);
+                
+                // 检查解析结果
+                if (config == null) {
+                    JOptionPane.showMessageDialog(this, "配置文件格式错误，无法解析！", "导入失败", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
                 
                 // 确认是否要导入配置
                 int option = JOptionPane.showConfirmDialog(this, 
@@ -309,9 +370,15 @@ public class TabUI extends JPanel {
                     applyConfig(config);
                     JOptionPane.showMessageDialog(this, "配置导入成功！", "导入成功", JOptionPane.INFORMATION_MESSAGE);
                 }
+            } catch (SecurityException ex) {
+                JOptionPane.showMessageDialog(this, "没有权限读取文件: " + ex.getMessage(), "导入失败", JOptionPane.ERROR_MESSAGE);
+                BurpExtender.logError( ex.getLocalizedMessage());
+            } catch (IOException ex) {
+                JOptionPane.showMessageDialog(this, "文件读取失败: " + ex.getMessage(), "导入失败", JOptionPane.ERROR_MESSAGE);
+                BurpExtender.logError( ex.getLocalizedMessage());
             } catch (Exception ex) {
                 JOptionPane.showMessageDialog(this, "导入配置失败: " + ex.getMessage(), "导入失败", JOptionPane.ERROR_MESSAGE);
-                ex.printStackTrace();
+                BurpExtender.logError( ex.getLocalizedMessage());
             }
         }
     }
@@ -321,29 +388,43 @@ public class TabUI extends JPanel {
      * @param config 导入的配置
      */
     private void applyConfig(ExtenderConfig config) {
-        // 设置复选框状态
-        setCheckBoxStatus(config);
-        
-        // 清空现有表格数据
-        tableModel.clear();
-        
-        // 设置工具标志
-        TOOL_FLAGS.clear();
-        if (config.getToolFlags() != null) {
-            TOOL_FLAGS.addAll(config.getToolFlags());
-        }
-        
-        // 添加表项
-        if (config.getHeaderItemList() != null) {
-            for (HeaderItem item : config.getHeaderItemList()) {
-                // 使用HeaderItem对象直接添加行
-                tableModel.addRow(item);
+        try {
+            // 检查配置是否为空
+            if (config == null) {
+                JOptionPane.showMessageDialog(this, "导入的配置为空！", "导入失败", JOptionPane.ERROR_MESSAGE);
+                return;
             }
-        }
-        
-        // 设置键映射
-        if (config.getKeyMap() != null) {
-            tableModel.setKeyMap(config.getKeyMap());
+            
+            // 设置复选框状态
+            setCheckBoxStatus(config);
+            
+            // 清空现有表格数据
+            tableModel.clear();
+            
+            // 设置工具标志
+            TOOL_FLAGS.clear();
+            if (config.getToolFlags() != null) {
+                TOOL_FLAGS.addAll(config.getToolFlags());
+            }
+            
+            // 添加表项
+            if (config.getHeaderItemList() != null) {
+                for (HeaderItem item : config.getHeaderItemList()) {
+                    // 检查HeaderItem是否为空
+                    if (item != null) {
+                        // 使用HeaderItem对象直接添加行
+                        tableModel.addRow(item);
+                    }
+                }
+            }
+            
+            // 设置键映射
+            if (config.getKeyMap() != null) {
+                tableModel.setKeyMap(config.getKeyMap());
+            }
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "应用配置时发生错误: " + ex.getMessage(), "导入失败", JOptionPane.ERROR_MESSAGE);
+            BurpExtender.logError( ex.getLocalizedMessage());
         }
     }
 }

@@ -101,4 +101,13 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
     public Component getUiComponent() {
         return tabUI;
     }
+
+    public static void logInfo(String info) {
+        stdout.println(info);
+    }
+
+    public static void logError(String error) {
+        stderr.println(error);
+    }
+
 }
