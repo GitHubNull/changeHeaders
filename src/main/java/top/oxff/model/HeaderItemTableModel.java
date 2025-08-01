@@ -8,11 +8,11 @@ import java.util.Map;
 
 public class HeaderItemTableModel extends AbstractTableModel {
     private final static String[] columnNames = new String[]{
-            "Index", "Key", "Value", "Proxy", "Repeater", "Intruder", "Scanner", "Extender", "Description"
+            "Index", "Key", "Value", "Proxy", "Repeater", "Intruder", "Scanner", "Extender", "PopupMenuEnable", "Description"
     };
     private final static Class[] columnClasses = new Class[]{
             Integer.class, String.class, String.class, Boolean.class, Boolean.class, Boolean.class, Boolean.class,
-            Boolean.class, String.class
+            Boolean.class, Boolean.class, String.class
     };
 
 
@@ -64,10 +64,11 @@ public class HeaderItemTableModel extends AbstractTableModel {
                 item[1],
                 item[2],
                 "是".equals(item[3]),
-                "是".equals(item[3]),
-                "是".equals(item[3]),
-                "是".equals(item[3]),
-                "是".equals(item[3])
+                "是".equals(item[4]),
+                "是".equals(item[5]),
+                "是".equals(item[6]),
+                "是".equals(item[7]),
+                "是".equals(item[8])
         );
         fireTableRowsInserted(getRowCount() - 1, getRowCount() - 1);
     }
@@ -94,11 +95,11 @@ public class HeaderItemTableModel extends AbstractTableModel {
         HeaderItem oldHeaderItem = HeaderItemController.getHeaderItemByIndex(rowIndex);
         switch (columnIndex) {
             case 1:
-                HeaderItemController.updateHeaderItem(oldHeaderItem, (String) aValue, oldHeaderItem.getValue(), oldHeaderItem.getDescription(), oldHeaderItem.isProxyEnable(), oldHeaderItem.isRepeaterEnable(), oldHeaderItem.isIntruderEnable(), oldHeaderItem.isScannerEnable(), oldHeaderItem.isExtenderEnable());
+                HeaderItemController.updateHeaderItem(oldHeaderItem, (String) aValue, oldHeaderItem.getValue(), oldHeaderItem.getDescription(), oldHeaderItem.isProxyEnable(), oldHeaderItem.isRepeaterEnable(), oldHeaderItem.isIntruderEnable(), oldHeaderItem.isScannerEnable(), oldHeaderItem.isExtenderEnable(), oldHeaderItem.popupMenuEnable);
                 fireTableCellUpdated(rowIndex, columnIndex);
                 break;
             case 2:
-                HeaderItemController.updateHeaderItem(oldHeaderItem, oldHeaderItem.getKey(), (String) aValue, oldHeaderItem.getDescription(), oldHeaderItem.isProxyEnable(), oldHeaderItem.isRepeaterEnable(), oldHeaderItem.isIntruderEnable(), oldHeaderItem.isScannerEnable(), oldHeaderItem.isExtenderEnable());
+                HeaderItemController.updateHeaderItem(oldHeaderItem, oldHeaderItem.getKey(), (String) aValue, oldHeaderItem.getDescription(), oldHeaderItem.isProxyEnable(), oldHeaderItem.isRepeaterEnable(), oldHeaderItem.isIntruderEnable(), oldHeaderItem.isScannerEnable(), oldHeaderItem.isExtenderEnable(), oldHeaderItem.popupMenuEnable);
                 fireTableCellUpdated(rowIndex, columnIndex);
                 break;
             case 3:
@@ -122,7 +123,11 @@ public class HeaderItemTableModel extends AbstractTableModel {
                 fireTableCellUpdated(rowIndex, columnIndex);
                 break;
             case 8:
-                HeaderItemController.updateHeaderItem(oldHeaderItem, oldHeaderItem.getKey(), oldHeaderItem.getValue(), (String) aValue, oldHeaderItem.isProxyEnable(), oldHeaderItem.isRepeaterEnable(), oldHeaderItem.isIntruderEnable(), oldHeaderItem.isScannerEnable(), oldHeaderItem.isExtenderEnable());
+                HeaderItemController.enablePopupMenu((boolean) aValue, oldHeaderItem);
+                fireTableCellUpdated(rowIndex, columnIndex);
+                break;
+            case 9:
+                HeaderItemController.updateHeaderItem(oldHeaderItem, oldHeaderItem.getKey(), oldHeaderItem.getValue(), (String) aValue, oldHeaderItem.isProxyEnable(), oldHeaderItem.isRepeaterEnable(), oldHeaderItem.isIntruderEnable(), oldHeaderItem.isScannerEnable(), oldHeaderItem.isExtenderEnable(), oldHeaderItem.popupMenuEnable);
                 fireTableCellUpdated(rowIndex, columnIndex);
                 break;
             default:

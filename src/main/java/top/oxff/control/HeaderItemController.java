@@ -9,7 +9,7 @@ import java.util.Map;
 public class HeaderItemController {
     public static int addHeaderItem(String key, String value, String description, boolean proxyEnable,
                                     boolean repeaterEnable, boolean intruderEnable, boolean scannerEnable,
-                                    boolean extenderEnable) {
+                                    boolean extenderEnable, boolean popupMenuEnable) {
         HeaderItem headerItem = new HeaderItem();
         headerItem.setKey(key);
         headerItem.setValue(value);
@@ -19,6 +19,7 @@ public class HeaderItemController {
         headerItem.setIntruderEnable(intruderEnable);
         headerItem.setScannerEnable(scannerEnable);
         headerItem.setExtenderEnable(extenderEnable);
+        headerItem.setPopupMenuEnable(popupMenuEnable);
         return HeaderItemService.addHeaderItem(headerItem);
     }
 
@@ -40,7 +41,7 @@ public class HeaderItemController {
 
     public static boolean updateHeaderItem(HeaderItem oldHeaderItem, String key, String value, String description, boolean proxyEnable,
                                            boolean repeaterEnable, boolean intruderEnable, boolean scannerEnable,
-                                           boolean extenderEnable) {
+                                           boolean extenderEnable, boolean popupMenuEnable) {
         HeaderItem newHeaderItem = new HeaderItem();
         newHeaderItem.setId(oldHeaderItem.getId());
         newHeaderItem.setKey(key);
@@ -68,6 +69,7 @@ public class HeaderItemController {
         newHeaderItem.setIntruderEnable(oldHeaderItem.isIntruderEnable());
         newHeaderItem.setExtenderEnable(oldHeaderItem.isExtenderEnable());
         newHeaderItem.setScannerEnable(oldHeaderItem.isScannerEnable());
+        newHeaderItem.setPopupMenuEnable(oldHeaderItem.isPopupMenuEnable());
         newHeaderItem.setDescription(oldHeaderItem.getDescription());
 
         return HeaderItemService.updateHeaderItem(oldHeaderItem, newHeaderItem);
@@ -83,6 +85,7 @@ public class HeaderItemController {
         newHeaderItem.setIntruderEnable(oldHeaderItem.isIntruderEnable());
         newHeaderItem.setExtenderEnable(oldHeaderItem.isExtenderEnable());
         newHeaderItem.setScannerEnable(oldHeaderItem.isScannerEnable());
+        newHeaderItem.setPopupMenuEnable(oldHeaderItem.isPopupMenuEnable());
         newHeaderItem.setDescription(oldHeaderItem.getDescription());
 
         return HeaderItemService.updateHeaderItem(oldHeaderItem, newHeaderItem);
@@ -98,6 +101,7 @@ public class HeaderItemController {
         newHeaderItem.setIntruderEnable(intruderEnable);
         newHeaderItem.setExtenderEnable(oldHeaderItem.isExtenderEnable());
         newHeaderItem.setScannerEnable(oldHeaderItem.isScannerEnable());
+        newHeaderItem.setPopupMenuEnable(oldHeaderItem.isPopupMenuEnable());
         newHeaderItem.setDescription(oldHeaderItem.getDescription());
 
         return HeaderItemService.updateHeaderItem(oldHeaderItem, newHeaderItem);
@@ -113,6 +117,7 @@ public class HeaderItemController {
         newHeaderItem.setIntruderEnable(oldHeaderItem.isIntruderEnable());
         newHeaderItem.setExtenderEnable(extenderEnable);
         newHeaderItem.setScannerEnable(oldHeaderItem.isScannerEnable());
+        newHeaderItem.setPopupMenuEnable(oldHeaderItem.isPopupMenuEnable());
         newHeaderItem.setDescription(oldHeaderItem.getDescription());
 
         return HeaderItemService.updateHeaderItem(oldHeaderItem, newHeaderItem);
@@ -128,8 +133,24 @@ public class HeaderItemController {
         newHeaderItem.setIntruderEnable(oldHeaderItem.isIntruderEnable());
         newHeaderItem.setExtenderEnable(oldHeaderItem.isExtenderEnable());
         newHeaderItem.setScannerEnable(scannerEnable);
+        newHeaderItem.setPopupMenuEnable(oldHeaderItem.isPopupMenuEnable());
         newHeaderItem.setDescription(oldHeaderItem.getDescription());
 
+        return HeaderItemService.updateHeaderItem(oldHeaderItem, newHeaderItem);
+    }
+
+    public static boolean enablePopupMenu(boolean popupMenuEnable, HeaderItem oldHeaderItem) {
+        HeaderItem newHeaderItem = new HeaderItem();
+        newHeaderItem.setId(oldHeaderItem.getId());
+        newHeaderItem.setKey(oldHeaderItem.getKey());
+        newHeaderItem.setValue(oldHeaderItem.getValue());
+        newHeaderItem.setProxyEnable(oldHeaderItem.isProxyEnable());
+        newHeaderItem.setRepeaterEnable(oldHeaderItem.isRepeaterEnable());
+        newHeaderItem.setIntruderEnable(oldHeaderItem.isIntruderEnable());
+        newHeaderItem.setExtenderEnable(oldHeaderItem.isExtenderEnable());
+        newHeaderItem.setScannerEnable(oldHeaderItem.isScannerEnable());
+        newHeaderItem.setPopupMenuEnable(popupMenuEnable);
+        newHeaderItem.setDescription(oldHeaderItem.getDescription());
         return HeaderItemService.updateHeaderItem(oldHeaderItem, newHeaderItem);
     }
 
@@ -180,33 +201,35 @@ public class HeaderItemController {
             case 7:
                 return headerItem.isExtenderEnable();
             case 8:
+                return headerItem.isPopupMenuEnable();
+            case 9:
                 return headerItem.getDescription();
             default:
                 return null;
         }
     }
 
-    public static List<HeaderItem> getHeaderItemList(){
-    	return HeaderItemService.getHeaderItemList();
+    public static List<HeaderItem> getHeaderItemList() {
+        return HeaderItemService.getHeaderItemList();
     }
 
-    public static void setHeaderItemList(List<HeaderItem> headerItemList){
-    	HeaderItemService.setHeaderItemList(headerItemList);
+    public static void setHeaderItemList(List<HeaderItem> headerItemList) {
+        HeaderItemService.setHeaderItemList(headerItemList);
     }
 
-    public static Map<String, Integer> getKeyMap(){
-    	return HeaderItemService.getKeyMap();
+    public static Map<String, Integer> getKeyMap() {
+        return HeaderItemService.getKeyMap();
     }
 
-    public static void setKeyMap(Map<String, Integer> keyMap){
-    	HeaderItemService.setKeyMap(keyMap);
+    public static void setKeyMap(Map<String, Integer> keyMap) {
+        HeaderItemService.setKeyMap(keyMap);
     }
 
     public static void addHeaderItem(HeaderItem headerItem) {
         HeaderItemService.addHeaderItem(headerItem);
     }
 
-    public boolean isExist(String key){
+    public boolean isExist(String key) {
         return HeaderItemService.isExist(key);
     }
 

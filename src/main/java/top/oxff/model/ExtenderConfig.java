@@ -14,6 +14,7 @@ public class ExtenderConfig {
     private boolean intruderEnable;
     private boolean scannerEnable;
     private boolean extenderEnable;
+    private boolean popupMenuEnable;
     private List<HeaderItem> headerItemList;
     private Map<String, Integer> keyMap;
 }

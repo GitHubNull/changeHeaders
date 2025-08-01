@@ -1,5 +1,6 @@
 package top.oxff.model;
 
+import burp.BurpExtender;
 import burp.IBurpExtenderCallbacks;
 import lombok.Data;
 
@@ -13,6 +14,7 @@ public class HeaderItem {
     boolean intruderEnable;
     boolean scannerEnable;
     boolean extenderEnable;
+    boolean popupMenuEnable;
     String description;
 
     public boolean isEnableTool(int toolFlag) {
@@ -27,6 +29,8 @@ public class HeaderItem {
                 return scannerEnable;
             case IBurpExtenderCallbacks.TOOL_EXTENDER:
                 return extenderEnable;
+            case BurpExtender.TOOL_FLAG_POPUP_MENU:
+                return popupMenuEnable;
             default:
                 return false;
         }

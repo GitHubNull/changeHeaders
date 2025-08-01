@@ -13,14 +13,16 @@ import java.io.PrintWriter;
 import java.util.*;
 
 public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListener {
-    final static String NAME = "changeHeaders_v1.6.1";
+    final static String NAME = "changeHeaders_v1.7.0";
 
     public static IBurpExtenderCallbacks burpExtenderCallbacks;
 
-    IExtensionHelpers extensionHelpers;
+    public static IExtensionHelpers extensionHelpers;
 
     public static PrintWriter stdout;
     public static PrintWriter stderr;
+
+    public static final int TOOL_FLAG_POPUP_MENU = 666666;
 
     public final static Set<Integer> TOOL_FLAGS = new HashSet<>();
 

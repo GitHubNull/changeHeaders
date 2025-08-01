@@ -20,6 +20,7 @@ public class TabUI extends JPanel {
     JCheckBox repeatCheckbox;
     JCheckBox intruderCheckbox;
     JCheckBox scannerCheckbox;
+    JCheckBox popupMenuCheckbox;
 
     // for IBurpExtenderCallbacks.TOOL_EXTENDER
     JCheckBox extenderCheckbox;
@@ -56,12 +57,15 @@ public class TabUI extends JPanel {
 
         extenderCheckbox = new JCheckBox("extender");
 
+        popupMenuCheckbox = new JCheckBox("popupMenu");
+
         northPanel.add(label);
         northPanel.add(proxyCheckbox);
         northPanel.add(repeatCheckbox);
         northPanel.add(intruderCheckbox);
         northPanel.add(scannerCheckbox);
         northPanel.add(extenderCheckbox);
+        northPanel.add(popupMenuCheckbox);
 
         proxyCheckbox.addActionListener(e -> {
             if (proxyCheckbox.isSelected()) {
@@ -103,6 +107,14 @@ public class TabUI extends JPanel {
             }
         });
 
+        popupMenuCheckbox.addActionListener(e -> {
+            if (popupMenuCheckbox.isSelected()) {
+                BurpExtender.TOOL_FLAGS.add(BurpExtender.TOOL_FLAG_POPUP_MENU);
+            } else {
+                BurpExtender.TOOL_FLAGS.remove(BurpExtender.TOOL_FLAG_POPUP_MENU);
+            }
+        });
+
         add(northPanel, BorderLayout.NORTH);
 
 
@@ -122,7 +134,7 @@ public class TabUI extends JPanel {
         delBtn = new JButton("删除");
 
         addBtn.addActionListener(e -> {
-            String[] item = new String[]{"键", "值", "描述", "是/否", "是/否","是/否","是/否","是/否"};
+            String[] item = new String[]{"键", "值", "描述", "是/否", "是/否","是/否","是/否","是/否","是/否"};
             tableModel.addRow(item);
         });
 
@@ -131,6 +143,8 @@ public class TabUI extends JPanel {
             if (null == selectedRows) {
                 return;
             }
+
+
 
             for (int selectedRow : selectedRows) {
                 tableModel.removeRow(selectedRow);
@@ -154,6 +168,7 @@ public class TabUI extends JPanel {
             intruderCheckbox.setSelected(false);
             scannerCheckbox.setSelected(false);
             extenderCheckbox.setSelected(false);
+            popupMenuCheckbox.setSelected(false);
         });
 
         optPanel2.add(clearAllConfigBtn);
@@ -170,6 +185,7 @@ public class TabUI extends JPanel {
         intruderCheckbox.setSelected(extenderConfig.isIntruderEnable());
         scannerCheckbox.setSelected(extenderConfig.isScannerEnable());
         extenderCheckbox.setSelected(extenderConfig.isExtenderEnable());
+        popupMenuCheckbox.setSelected(extenderConfig.isPopupMenuEnable());
     }
     public ExtenderConfig getExtenderConfig() {
         ExtenderConfig extenderConfig = new ExtenderConfig();
@@ -179,6 +195,7 @@ public class TabUI extends JPanel {
         extenderConfig.setIntruderEnable(intruderCheckbox.isSelected());
         extenderConfig.setScannerEnable(scannerCheckbox.isSelected());
         extenderConfig.setExtenderEnable(extenderCheckbox.isSelected());
+        extenderConfig.setPopupMenuEnable(popupMenuCheckbox.isSelected());
         extenderConfig.setHeaderItemList(HeaderItemController.getHeaderItemList());
         extenderConfig.setKeyMap(HeaderItemController.getKeyMap());
 
