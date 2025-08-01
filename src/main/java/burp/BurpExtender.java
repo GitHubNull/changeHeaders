@@ -13,7 +13,7 @@ import java.io.PrintWriter;
 import java.util.*;
 
 public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListener {
-    final static String NAME = "changeHeaders_v1.8.0";
+    final static String NAME = "changeHeaders_v1.9.0";
 
     public static IBurpExtenderCallbacks burpExtenderCallbacks;
 

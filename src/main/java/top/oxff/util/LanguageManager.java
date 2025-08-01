@@ -1,5 +1,7 @@
 package top.oxff.util;
 
+import lombok.Getter;
+
 import java.util.Locale;
 import java.util.ResourceBundle;
 
@@ -9,16 +11,14 @@ import java.util.ResourceBundle;
  */
 public class LanguageManager {
     private static final String BUNDLE_NAME = "messages";
+    /**
+     * -- GETTER --
+     *  获取当前语言环境
+     *
+     */
+    @Getter
     private static Locale currentLocale = Locale.CHINESE;
     private static ResourceBundle messageBundle = ResourceBundle.getBundle(BUNDLE_NAME, currentLocale);
-
-    /**
-     * 获取当前语言环境
-     * @return 当前语言环境
-     */
-    public static Locale getCurrentLocale() {
-        return currentLocale;
-    }
 
     /**
      * 设置语言环境
