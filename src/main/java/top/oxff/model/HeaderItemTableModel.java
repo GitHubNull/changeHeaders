@@ -95,11 +95,11 @@ public class HeaderItemTableModel extends AbstractTableModel {
         HeaderItem oldHeaderItem = HeaderItemController.getHeaderItemByIndex(rowIndex);
         switch (columnIndex) {
             case 1:
-                HeaderItemController.updateHeaderItem(oldHeaderItem, (String) aValue, oldHeaderItem.getValue(), oldHeaderItem.getDescription(), oldHeaderItem.isProxyEnable(), oldHeaderItem.isRepeaterEnable(), oldHeaderItem.isIntruderEnable(), oldHeaderItem.isScannerEnable(), oldHeaderItem.isExtenderEnable(), oldHeaderItem.popupMenuEnable);
+                HeaderItemController.updateHeaderItem(oldHeaderItem, (String) aValue, oldHeaderItem.getValue(), oldHeaderItem.getDescription(), oldHeaderItem.isProxyEnable(), oldHeaderItem.isRepeaterEnable(), oldHeaderItem.isIntruderEnable(), oldHeaderItem.isScannerEnable(), oldHeaderItem.isExtenderEnable(), oldHeaderItem.isPopupMenuEnable());
                 fireTableCellUpdated(rowIndex, columnIndex);
                 break;
             case 2:
-                HeaderItemController.updateHeaderItem(oldHeaderItem, oldHeaderItem.getKey(), (String) aValue, oldHeaderItem.getDescription(), oldHeaderItem.isProxyEnable(), oldHeaderItem.isRepeaterEnable(), oldHeaderItem.isIntruderEnable(), oldHeaderItem.isScannerEnable(), oldHeaderItem.isExtenderEnable(), oldHeaderItem.popupMenuEnable);
+                HeaderItemController.updateHeaderItem(oldHeaderItem, oldHeaderItem.getKey(), (String) aValue, oldHeaderItem.getDescription(), oldHeaderItem.isProxyEnable(), oldHeaderItem.isRepeaterEnable(), oldHeaderItem.isIntruderEnable(), oldHeaderItem.isScannerEnable(), oldHeaderItem.isExtenderEnable(), oldHeaderItem.isPopupMenuEnable());
                 fireTableCellUpdated(rowIndex, columnIndex);
                 break;
             case 3:
@@ -127,7 +127,7 @@ public class HeaderItemTableModel extends AbstractTableModel {
                 fireTableCellUpdated(rowIndex, columnIndex);
                 break;
             case 9:
-                HeaderItemController.updateHeaderItem(oldHeaderItem, oldHeaderItem.getKey(), oldHeaderItem.getValue(), (String) aValue, oldHeaderItem.isProxyEnable(), oldHeaderItem.isRepeaterEnable(), oldHeaderItem.isIntruderEnable(), oldHeaderItem.isScannerEnable(), oldHeaderItem.isExtenderEnable(), oldHeaderItem.popupMenuEnable);
+                HeaderItemController.updateHeaderItem(oldHeaderItem, oldHeaderItem.getKey(), oldHeaderItem.getValue(), (String) aValue, oldHeaderItem.isProxyEnable(), oldHeaderItem.isRepeaterEnable(), oldHeaderItem.isIntruderEnable(), oldHeaderItem.isScannerEnable(), oldHeaderItem.isExtenderEnable(), oldHeaderItem.isPopupMenuEnable());
                 fireTableCellUpdated(rowIndex, columnIndex);
                 break;
             default:

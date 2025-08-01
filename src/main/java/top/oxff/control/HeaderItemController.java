@@ -53,6 +53,7 @@ public class HeaderItemController {
         newHeaderItem.setIntruderEnable(intruderEnable);
         newHeaderItem.setScannerEnable(scannerEnable);
         newHeaderItem.setExtenderEnable(extenderEnable);
+        newHeaderItem.setPopupMenuEnable(popupMenuEnable);
         return HeaderItemService.updateHeaderItem(oldHeaderItem, newHeaderItem);
     }
 
