@@ -4,10 +4,18 @@ import burp.BurpExtender;
 import burp.IBurpExtenderCallbacks;
 import top.oxff.control.HeaderItemController;
 import top.oxff.model.ExtenderConfig;
-//import com.sun.org.apache.xpath.internal.operations.String;
+import top.oxff.model.HeaderItem;
 
 import javax.swing.*;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import static burp.BurpExtender.TOOL_FLAGS;
 import static burp.BurpExtender.tableModel;
@@ -39,6 +47,10 @@ public class TabUI extends JPanel {
     JPanel optPanel2;
 
     JButton clearAllConfigBtn;
+    
+    // 添加导入导出按钮
+    JButton exportConfigBtn;
+    JButton importConfigBtn;
 
     public TabUI() {
         setLayout(new BorderLayout());
@@ -144,15 +156,33 @@ public class TabUI extends JPanel {
                 return;
             }
 
-
-
             for (int selectedRow : selectedRows) {
                 tableModel.removeRow(selectedRow);
+            }
+        });
+        
+        // 添加导入导出按钮
+        exportConfigBtn = new JButton("导出配置");
+        importConfigBtn = new JButton("导入配置");
+        
+        exportConfigBtn.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                exportConfig();
+            }
+        });
+        
+        importConfigBtn.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                importConfig();
             }
         });
 
         optPanel1.add(addBtn);
         optPanel1.add(delBtn);
+        optPanel1.add(exportConfigBtn);
+        optPanel1.add(importConfigBtn);
 
         southPanel.add(optPanel1, BorderLayout.CENTER);
 
@@ -187,6 +217,7 @@ public class TabUI extends JPanel {
         extenderCheckbox.setSelected(extenderConfig.isExtenderEnable());
         popupMenuCheckbox.setSelected(extenderConfig.isPopupMenuEnable());
     }
+    
     public ExtenderConfig getExtenderConfig() {
         ExtenderConfig extenderConfig = new ExtenderConfig();
         extenderConfig.setToolFlags(BurpExtender.TOOL_FLAGS);
@@ -200,6 +231,119 @@ public class TabUI extends JPanel {
         extenderConfig.setKeyMap(HeaderItemController.getKeyMap());
 
         return extenderConfig;
-
+    }
+    
+    /**
+     * 导出配置到JSON文件
+     */
+    private void exportConfig() {
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setDialogTitle("导出配置文件");
+        fileChooser.setSelectedFile(new File("changeHeaders_config.json"));
+        FileNameExtensionFilter filter = new FileNameExtensionFilter("JSON files", "json");
+        fileChooser.setFileFilter(filter);
+        
+        int userSelection = fileChooser.showSaveDialog(this);
+        
+        if (userSelection == JFileChooser.APPROVE_OPTION) {
+            File fileToSave = fileChooser.getSelectedFile();
+            
+            // 确保文件有.json扩展名
+            if (!fileToSave.getAbsolutePath().endsWith(".json")) {
+                fileToSave = new File(fileToSave + ".json");
+            }
+            
+            try {
+                ExtenderConfig config = getExtenderConfig();
+                // 序列化为JSON字符串
+                String jsonString = com.alibaba.fastjson2.JSON.toJSONString(config);
+                
+                // 使用OutputStreamWriter以UTF-8编码写入文件
+                try (OutputStreamWriter writer = new OutputStreamWriter(new FileOutputStream(fileToSave), StandardCharsets.UTF_8)) {
+                    writer.write(jsonString);
+                }
+                
+                JOptionPane.showMessageDialog(this, "配置导出成功！", "导出成功", JOptionPane.INFORMATION_MESSAGE);
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this, "导出配置失败: " + ex.getMessage(), "导出失败", JOptionPane.ERROR_MESSAGE);
+                ex.printStackTrace();
+            }
+        }
+    }
+    
+    /**
+     * 从JSON文件导入配置
+     */
+    private void importConfig() {
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setDialogTitle("导入配置文件");
+        FileNameExtensionFilter filter = new FileNameExtensionFilter("JSON files", "json");
+        fileChooser.setFileFilter(filter);
+        
+        int userSelection = fileChooser.showOpenDialog(this);
+        
+        if (userSelection == JFileChooser.APPROVE_OPTION) {
+            File selectedFile = fileChooser.getSelectedFile();
+            
+            try {
+                // 使用InputStreamReader以UTF-8编码读取文件
+                StringBuilder jsonString = new StringBuilder();
+                char[] buffer = new char[1024];
+                int length;
+                try (InputStreamReader reader = new InputStreamReader(new FileInputStream(selectedFile), StandardCharsets.UTF_8)) {
+                    while ((length = reader.read(buffer)) != -1) {
+                        jsonString.append(buffer, 0, length);
+                    }
+                }
+                
+                ExtenderConfig config = com.alibaba.fastjson2.JSON.parseObject(jsonString.toString(), ExtenderConfig.class);
+                
+                // 确认是否要导入配置
+                int option = JOptionPane.showConfirmDialog(this, 
+                    "导入配置将覆盖当前所有配置，是否继续？", 
+                    "确认导入", 
+                    JOptionPane.YES_NO_OPTION);
+                
+                if (option == JOptionPane.YES_OPTION) {
+                    // 应用导入的配置
+                    applyConfig(config);
+                    JOptionPane.showMessageDialog(this, "配置导入成功！", "导入成功", JOptionPane.INFORMATION_MESSAGE);
+                }
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this, "导入配置失败: " + ex.getMessage(), "导入失败", JOptionPane.ERROR_MESSAGE);
+                ex.printStackTrace();
+            }
+        }
+    }
+    
+    /**
+     * 应用导入的配置
+     * @param config 导入的配置
+     */
+    private void applyConfig(ExtenderConfig config) {
+        // 设置复选框状态
+        setCheckBoxStatus(config);
+        
+        // 清空现有表格数据
+        tableModel.clear();
+        
+        // 设置工具标志
+        TOOL_FLAGS.clear();
+        if (config.getToolFlags() != null) {
+            TOOL_FLAGS.addAll(config.getToolFlags());
+        }
+        
+        // 添加表项
+        if (config.getHeaderItemList() != null) {
+            for (HeaderItem item : config.getHeaderItemList()) {
+                // 使用HeaderItem对象直接添加行
+                tableModel.addRow(item);
+            }
+        }
+        
+        // 设置键映射
+        if (config.getKeyMap() != null) {
+            tableModel.setKeyMap(config.getKeyMap());
+        }
     }
 }
