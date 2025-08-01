@@ -6,10 +6,11 @@ import top.oxff.service.HeaderItemService;
 import java.util.List;
 import java.util.Map;
 
+@SuppressWarnings("unused")
 public class HeaderItemController {
-    public static int addHeaderItem(String key, String value, String description, boolean proxyEnable,
-                                    boolean repeaterEnable, boolean intruderEnable, boolean scannerEnable,
-                                    boolean extenderEnable, boolean popupMenuEnable) {
+    public static void addHeaderItem(String key, String value, String description, boolean proxyEnable,
+                                     boolean repeaterEnable, boolean intruderEnable, boolean scannerEnable,
+                                     boolean extenderEnable, boolean popupMenuEnable) {
         HeaderItem headerItem = new HeaderItem();
         headerItem.setKey(key);
         headerItem.setValue(value);
@@ -20,7 +21,7 @@ public class HeaderItemController {
         headerItem.setScannerEnable(scannerEnable);
         headerItem.setExtenderEnable(extenderEnable);
         headerItem.setPopupMenuEnable(popupMenuEnable);
-        return HeaderItemService.addHeaderItem(headerItem);
+        HeaderItemService.addHeaderItem(headerItem);
     }
 
     public static boolean deleteHeaderItemById(HeaderItem headerItem) {

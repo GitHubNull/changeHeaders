@@ -1,7 +1,6 @@
 package top.oxff.control;
 
 import burp.*;
-import com.sun.org.apache.bcel.internal.generic.IF_ACMPEQ;
 import top.oxff.model.HeaderItem;
 import top.oxff.model.Option;
 import top.oxff.util.BytesTools;
