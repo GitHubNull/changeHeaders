@@ -1,118 +1,174 @@
-# changeHeaders 项目
+# changeHeaders - 高级HTTP头操作工具
 
-## 简介
+[![Java](https://img.shields.io/badge/Java-8+-blue.svg)](https://www.oracle.com/java/technologies/)
+[![Burp Suite](https://img.shields.io/badge/Burp%20Suite-Extension-orange.svg)](https://portswigger.net/burp)
+[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-`changeHeaders` 是一个用于修改 HTTP 请求头的工具，旨在帮助开发人员和安全研究人员测试和调试 HTTP 请求。该项目基于 Java 开发，并集成了 Burp Suite 的扩展 API 和 Fastjson2 库。
+[English Version](README_en.md)
 
-## 目录结构
-```commandline
-├── src 
-│ ├── main 
-│ │ ├── java 
-│ │ └── resources 
-│ └── test 
-│ └── java 
-├── target 
-├── pom.xml 
-└── README.md
-```
-## 安装
+## 🌟 概述
 
-### 前提条件
+changeHeaders是一个功能强大的Burp Suite扩展插件，允许安全专业人员和开发人员轻松修改HTTP请求头。无论您是在进行渗透测试、漏洞赏金 hunting，还是应用程序调试，changeHeaders都能简化跨多个Burp Suite工具的请求头操作过程。
 
-- Java 8 或更高版本
-- Maven 3.5 或更高版本
+通过直观的GUI和强大的配置管理，changeHeaders可帮助您：
+- 通过添加/修改安全头来绕过安全限制
+- 使用不同的用户代理或引荐来源测试应用程序行为
+- 模拟来自不同来源或设备的请求
+- 自动化重复的请求头修改任务
 
-### 构建项目
+## ✨ 主要功能
 
-1. 克隆仓库：
- ```bash
+### 🔧 强大的请求头管理
+- **添加/修改/删除请求头**：通过用户友好的表格界面轻松管理HTTP请求头
+- **批量操作**：在不同工具中同时应用多个请求头更改
+- **启用/禁用规则**：动态切换请求头修改，无需删除配置
+
+### 🎯 多工具集成
+- 与所有主要Burp Suite工具无缝协作：
+  - Proxy
+  - Repeater
+  - Intruder
+  - Scanner
+  - Extender
+- 上下文菜单集成，快速访问请求头修改界面
+
+### 💾 智能配置管理
+- **自动保存**：所有配置都会自动保存并在会话间持久化
+- **导入/导出**：使用JSON格式轻松在团队成员或项目间共享配置
+- **选择性应用**：选择哪些Burp工具应应用您的请求头修改
+
+### 🌍 国际化
+- **多语言支持**：提供中文和英文两种语言
+- **便捷语言切换**：单击即可切换语言
+
+### 🛠 高级功能
+- **模块特定规则**：为不同的Burp Suite模块应用不同的请求头
+- **实时预览**：在发送请求前查看请求头更改
+- **持久化存储**：使用Burp的扩展设置自动保存配置
+- **右键菜单集成**：
+  - **自动替换**：从选中的请求文本中自动添加/更新请求头
+  - **手动触发替换**：添加可通过上下文菜单手动应用的请求头
+  - **主动请求头替换**：将选中的请求头直接应用到HTTP编辑器中的当前请求
+
+### 🔄 两种操作模式
+1. **自动模式**：根据模块设置自动应用请求头
+2. **手动模式**：仅在通过上下文菜单手动触发时应用请求头
+
+## 📋 安装
+
+### 先决条件
+- Java 8或更高版本
+- Burp Suite Professional或Community Edition
+
+### 安装方法
+
+#### 方法1：直接JAR安装
+1. 从[GitHub Releases](https://github.com/your-repo/changeHeaders/releases)下载最新的JAR文件
+2. 打开Burp Suite
+3. 导航到`Extensions` → `Installed`
+4. 点击`Add`
+5. 选择`Extension type`为`Java`
+6. 浏览并选择下载的JAR文件
+7. 点击`Next`完成安装
+
+#### 方法2：从源码构建
+```bash
+# 克隆仓库
 git clone https://github.com/your-repo/changeHeaders.git
 cd changeHeaders
+
+# 使用Maven构建（标准构建）
+mvn clean package
+
+# 使用Maven构建（带时间戳的调试构建）
+mvn clean package "-Ddebug.build=true"
+
+# JAR文件将在target/目录中生成
 ```
 
-2. 使用 Maven 构建项目
-```bash
-mvn clean package 
+**注意**：使用`-Ddebug.build=true`构建时，将生成一个带时间戳的附加JAR文件（例如`changeHeaders-1.9.0-20250801170300.jar`）。这在开发和调试过程中区分不同构建版本时非常有用。
+
+## 🚀 快速入门指南
+
+### 1. 配置目标模块
+安装后，Burp Suite中将出现一个新的`changeHeaders_v1.9.0`标签页：
+- 选择哪些Burp Suite模块应应用您的请求头修改
+- 可用模块：Proxy、Repeater、Intruder、Scanner、Extender
+- 启用"popupMenu"以通过上下文菜单手动应用请求头
+
+### 2. 添加请求头规则
+两种添加请求头规则的方法：
+1. **手动添加**：在主界面中点击`Add`创建新的请求头规则
+2. **从请求添加**：在任何HTTP请求中选择请求头文本并右键单击选择"新增自动替换头"或"新增手动触发替换头"
+
+### 3. 应用请求头到请求
+三种应用请求头修改的方法：
+1. **自动应用**：当启用的模块处理请求时，请求头会自动应用
+2. **右键方法**：在任何Burp工具中，右键单击请求并选择`Send to changeHeaders`
+3. **上下文菜单应用**：对于启用了"popupMenu"的请求头，在HTTP编辑器中右键单击并选择"替换"以直接应用这些请求头
+
+### 4. 管理配置
+- **导出**：将您的请求头配置保存到JSON文件中以进行备份或共享
+- **导入**：加载以前保存的配置
+- **清除**：单击即可删除所有配置
+
+## 🎯 使用场景
+
+### 安全测试
 ```
+X-Forwarded-For: 127.0.0.1
+X-Real-IP: 127.0.0.1
+X-Client-IP: 127.0.0.1
+```
+通过伪造内部IP地址绕过基于IP的访问控制。
 
-这将生成一个可执行的 JAR 文件，位于 `target` 目录下。
+### 用户代理欺骗
+```
+User-Agent: Mozilla/5.0 (iPhone; CPU iPhone OS 14_0 like Mac OS X)
+```
+测试应用程序的移动版本或绕过特定于浏览器的限制。
 
-### 插件安装
+### 身份验证测试
+```
+Authorization: Bearer <token>
+X-API-Key: <key>
+```
+在不同的身份验证令牌或API密钥之间快速切换。
 
-#### 方法一：通过 Burp Suite 加载本地 JAR 文件
+### 上下文菜单使用
+1. **自动替换请求头**：
+   - 在任何HTTP请求中选择请求头行
+   - 右键单击并选择"新增自动替换头"
+   - 请求头将自动应用到启用模块的所有请求中
 
-1. 打开 Burp Suite。
-2. 导航到 `Extender` -> `Extensions`。
-3. 点击 `Add` 按钮。
-4. 选择 `Extension type` 为 `Java`。
-5. 浏览并选择构建生成的 JAR 文件（例如 `target/changeHeaders-1.6.0.jar`）。
-6. 点击 `Next` 并完成加载。
+2. **手动触发替换**：
+   - 在任何HTTP请求中选择请求头行
+   - 右键单击并选择"新增手动触发替换头"
+   - 在主界面中为这些请求头启用"popupMenu"
+   - 在任何HTTP编辑器中右键单击并选择"替换"以应用这些请求头
 
-#### 方法二：通过 GitHub Releases 下载预编译的 JAR 文件
+## 🤝 贡献
 
-1. 访问 [GitHub Releases 页面](https://github.com/your-repo/changeHeaders/releases)。
-2. 下载最新的 JAR 文件（例如 `changeHeaders-1.6.0.jar`）。
-3. 打开 Burp Suite。
-4. 导航到 `Extender` -> `Extensions`。
-5. 点击 `Add` 按钮。
-6. 选择 `Extension type` 为 `Java`。
-7. 浏览并选择下载的 JAR 文件。
-8. 点击 `Next` 并完成加载。
+欢迎贡献代码！您可以按以下方式帮助我们：
 
-## 使用方法
+1. Fork仓库
+2. 创建功能分支（`git checkout -b feature/AmazingFeature`）
+3. 提交您的更改（`git commit -m 'Add some AmazingFeature'`）
+4. 推送到分支（`git push origin feature/AmazingFeature`）
+5. 发起Pull Request
 
-### 运行工具
+请确保您的代码遵循现有风格并包含适当的测试。
 
-1. **加载插件**：
-    - 确保你已经按照 [安装](#插件安装) 部分的说明成功加载了 `changeHeaders` 插件到 Burp Suite。
+## 📄 许可证
 
-2. **配置生效模块**：
-    - 在 Burp Suite 的主界面中，你会看到一个名为 `changeHeaders` 的新标签页。
-    - 点击该标签页进入配置界面。
-    - 在顶部的“生效模块”区域，勾选你希望 `changeHeaders` 生效的 Burp Suite 模块（例如：Proxy、Repeater、Intruder、Scanner、Extender）。你可以通过勾选或取消勾选相应的复选框来启用或禁用这些模块中的请求头修改功能。
+本项目采用MIT许可证 - 详见[LICENSE](LICENSE)文件。
 
-3. **添加和管理请求头**：
-    - 在中间的表格区域，你可以查看和管理已配置的 HTTP 请求头。
-    - 点击“新增”按钮，可以添加新的请求头条目。默认情况下，会添加一条包含“键”、“值”、“描述”等字段的新记录。
-    - 选择一行或多行记录后，点击“删除”按钮可以移除选中的请求头条目。
-    - 如果需要清除所有配置，点击“清除所有配置”按钮，这将重置所有设置，并清空表格中的所有条目。
+## 📞 支持
 
-4. **发送和修改请求**：
-    - 在 Burp Suite 的 `Proxy` 或 `Repeater` 模块中，右键点击你想要修改的 HTTP 请求。
-    - 选择 `Send to changeHeaders` 选项，这将把选中的请求发送到 `changeHeaders` 界面。
-    - 在 `changeHeaders` 界面中，你可以根据需要修改 HTTP 请求头，并点击“发送”按钮以应用更改并发送修改后的请求。
+- 对于错误报告和功能请求，请使用[GitHub Issues](https://github.com/your-repo/changeHeaders/issues)
+- 对于一般问题，请查看文档或联系维护人员
 
-5. **保存配置**：
-    - 所有在 `changeHeaders` 界面中进行的配置都会自动保存，无需手动操作。
-    - 如果你需要导出或备份配置，可以通过 Burp Suite 的扩展管理功能进行操作。
+## 🙏 致谢
 
-### 示例
-
-假设你正在测试一个 Web 应用程序，并希望通过 `changeHeaders` 修改某些请求头以绕过安全检查。你可以按照以下步骤操作：
-
-1. 在 Burp Suite 中拦截一个 HTTP 请求。
-2. 右键点击该请求并选择 `Send to changeHeaders`。
-3. 在 `changeHeaders` 界面中，勾选 `Proxy` 和 `Repeater` 模块。
-4. 添加一个新的请求头，例如 `X-Forwarded-For: 192.168.1.1`。
-5. 点击“发送”按钮，观察应用程序对修改后的请求的响应。
-
-## 贡献
-
-欢迎贡献代码！请遵循以下步骤：
-
-1. Fork 本仓库。
-2. 创建一个新的分支 (`git checkout -b feature-branch`)。
-3. 提交你的更改 (`git commit -am 'Add some feature'`)。
-4. 推送到分支 (`git push origin feature-branch`)。
-5. 发起 Pull Request。
-
-## 许可证
-
-本项目采用 [MIT License](LICENSE) 许可证。详情请参见 `LICENSE` 文件。
-
-## 联系方式
-
-如果你有任何问题或建议，请通过 [GitHub Issues](https://github.com/GitHubNull/changeHeaders/issues) 或邮件联系作者。
-
----
+- 感谢Burp Suite团队提供出色的安全测试平台
+- 灵感来源于对更高效的Web应用程序测试中HTTP请求头操作的需求
