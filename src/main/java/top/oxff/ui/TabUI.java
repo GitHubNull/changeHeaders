@@ -5,13 +5,18 @@ import burp.IBurpExtenderCallbacks;
 import top.oxff.control.HeaderItemController;
 import top.oxff.model.ExtenderConfig;
 import top.oxff.model.HeaderItem;
+import top.oxff.util.LanguageManager;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import static burp.BurpExtender.TOOL_FLAGS;
 import static burp.BurpExtender.tableModel;
@@ -47,25 +52,33 @@ public class TabUI extends JPanel {
     // 添加导入导出按钮
     JButton exportConfigBtn;
     JButton importConfigBtn;
+    
+    // 语言切换按钮
+    JButton languageSwitchBtn;
+    private boolean isChinese = true; // 默认中文
 
     public TabUI() {
         setLayout(new BorderLayout());
 
         northPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
 
-        label = new JLabel("生效模块");
+        label = new JLabel(LanguageManager.getString("tab.title"));
 
-        proxyCheckbox = new JCheckBox("proxy");
+        proxyCheckbox = new JCheckBox(LanguageManager.getString("checkbox.proxy"));
 
-        repeatCheckbox = new JCheckBox("repeat");
+        repeatCheckbox = new JCheckBox(LanguageManager.getString("checkbox.repeat"));
 
-        intruderCheckbox = new JCheckBox("intruder");
+        intruderCheckbox = new JCheckBox(LanguageManager.getString("checkbox.intruder"));
 
-        scannerCheckbox = new JCheckBox("scanner");
+        scannerCheckbox = new JCheckBox(LanguageManager.getString("checkbox.scanner"));
 
-        extenderCheckbox = new JCheckBox("extender");
+        extenderCheckbox = new JCheckBox(LanguageManager.getString("checkbox.extender"));
 
-        popupMenuCheckbox = new JCheckBox("popupMenu");
+        popupMenuCheckbox = new JCheckBox(LanguageManager.getString("checkbox.popupMenu"));
+        
+        // 语言切换按钮
+        languageSwitchBtn = new JButton("EN/中文");
+        languageSwitchBtn.addActionListener(e -> switchLanguage());
 
         northPanel.add(label);
         northPanel.add(proxyCheckbox);
@@ -74,6 +87,7 @@ public class TabUI extends JPanel {
         northPanel.add(scannerCheckbox);
         northPanel.add(extenderCheckbox);
         northPanel.add(popupMenuCheckbox);
+        northPanel.add(languageSwitchBtn);
 
         proxyCheckbox.addActionListener(e -> {
             if (proxyCheckbox.isSelected()) {
@@ -138,11 +152,16 @@ public class TabUI extends JPanel {
 
         optPanel1 = new JPanel(new FlowLayout(FlowLayout.CENTER));
 
-        addBtn = new JButton("新增");
-        delBtn = new JButton("删除");
+        addBtn = new JButton(LanguageManager.getString("button.add"));
+        delBtn = new JButton(LanguageManager.getString("button.delete"));
 
         addBtn.addActionListener(e -> {
-            String[] item = new String[]{"键", "值", "描述", "是/否", "是/否","是/否","是/否","是/否","是/否"};
+            String[] item = new String[]{
+                LanguageManager.getString("button.add"),
+                LanguageManager.getString("button.add"),
+                LanguageManager.getString("button.add"),
+                "是/否", "是/否","是/否","是/否","是/否","是/否"
+            };
             tableModel.addRow(item);
         });
 
@@ -158,12 +177,22 @@ public class TabUI extends JPanel {
         });
         
         // 添加导入导出按钮
-        exportConfigBtn = new JButton("导出配置");
-        importConfigBtn = new JButton("导入配置");
+        exportConfigBtn = new JButton(LanguageManager.getString("button.exportConfig"));
+        importConfigBtn = new JButton(LanguageManager.getString("button.importConfig"));
         
-        exportConfigBtn.addActionListener(e -> exportConfig());
+        exportConfigBtn.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                exportConfig();
+            }
+        });
         
-        importConfigBtn.addActionListener(e -> importConfig());
+        importConfigBtn.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                importConfig();
+            }
+        });
 
         optPanel1.add(addBtn);
         optPanel1.add(delBtn);
@@ -174,7 +203,7 @@ public class TabUI extends JPanel {
 
         optPanel2 = new JPanel(new FlowLayout(FlowLayout.CENTER));
 
-        clearAllConfigBtn = new JButton("清除所有配置");
+        clearAllConfigBtn = new JButton(LanguageManager.getString("button.clearAllConfig"));
 
         clearAllConfigBtn.addActionListener(e -> {
             tableModel.clear();
@@ -220,13 +249,52 @@ public class TabUI extends JPanel {
     }
     
     /**
+     * 切换语言
+     */
+    private void switchLanguage() {
+        if (isChinese) {
+            // 切换到英文
+            LanguageManager.setLocale(java.util.Locale.ENGLISH);
+            isChinese = false;
+            languageSwitchBtn.setText("中文/EN");
+        } else {
+            // 切换到中文
+            LanguageManager.setLocale(java.util.Locale.CHINESE);
+            isChinese = true;
+            languageSwitchBtn.setText("EN/中文");
+        }
+        
+        // 更新界面文本
+        updateUIText();
+    }
+    
+    /**
+     * 更新界面文本
+     */
+    private void updateUIText() {
+        label.setText(LanguageManager.getString("tab.title"));
+        proxyCheckbox.setText(LanguageManager.getString("checkbox.proxy"));
+        repeatCheckbox.setText(LanguageManager.getString("checkbox.repeat"));
+        intruderCheckbox.setText(LanguageManager.getString("checkbox.intruder"));
+        scannerCheckbox.setText(LanguageManager.getString("checkbox.scanner"));
+        extenderCheckbox.setText(LanguageManager.getString("checkbox.extender"));
+        popupMenuCheckbox.setText(LanguageManager.getString("checkbox.popupMenu"));
+        addBtn.setText(LanguageManager.getString("button.add"));
+        delBtn.setText(LanguageManager.getString("button.delete"));
+        clearAllConfigBtn.setText(LanguageManager.getString("button.clearAllConfig"));
+        exportConfigBtn.setText(LanguageManager.getString("button.exportConfig"));
+        importConfigBtn.setText(LanguageManager.getString("button.importConfig"));
+    }
+    
+    /**
      * 导出配置到JSON文件
      */
     private void exportConfig() {
         JFileChooser fileChooser = new JFileChooser();
-        fileChooser.setDialogTitle("导出配置文件");
+        fileChooser.setDialogTitle(LanguageManager.getString("dialog.export.title"));
         fileChooser.setSelectedFile(new File("changeHeaders_config.json"));
-        FileNameExtensionFilter filter = new FileNameExtensionFilter("JSON files", "json");
+        FileNameExtensionFilter filter = new FileNameExtensionFilter(
+            LanguageManager.getString("dialog.filechooser.filter"), "json");
         fileChooser.setFileFilter(filter);
         
         int userSelection = fileChooser.showSaveDialog(this);
@@ -236,7 +304,10 @@ public class TabUI extends JPanel {
             
             // 检查文件名是否为空
             if (fileToSave == null || fileToSave.getName().trim().isEmpty()) {
-                JOptionPane.showMessageDialog(this, "文件名不能为空！", "导出失败", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this, 
+                    LanguageManager.getString("error.file.empty"), 
+                    LanguageManager.getString("dialog.error.export.title"), 
+                    JOptionPane.ERROR_MESSAGE);
                 return;
             }
             
@@ -247,7 +318,10 @@ public class TabUI extends JPanel {
             
             // 检查文件是否可写
             if (fileToSave.exists() && !fileToSave.canWrite()) {
-                JOptionPane.showMessageDialog(this, "无法写入文件: " + fileToSave.getAbsolutePath(), "导出失败", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this, 
+                    LanguageManager.getString("error.file.write", fileToSave.getAbsolutePath()), 
+                    LanguageManager.getString("dialog.error.export.title"), 
+                    JOptionPane.ERROR_MESSAGE);
                 return;
             }
             
@@ -256,7 +330,10 @@ public class TabUI extends JPanel {
                 
                 // 检查配置是否为空
                 if (config == null) {
-                    JOptionPane.showMessageDialog(this, "当前没有可导出的配置！", "导出失败", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(this, 
+                        LanguageManager.getString("error.config.null"), 
+                        LanguageManager.getString("dialog.error.export.title"), 
+                        JOptionPane.ERROR_MESSAGE);
                     return;
                 }
                 
@@ -265,25 +342,41 @@ public class TabUI extends JPanel {
                 
                 // 检查JSON字符串是否为空
                 if (jsonString == null || jsonString.isEmpty()) {
-                    JOptionPane.showMessageDialog(this, "配置序列化失败！", "导出失败", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(this, 
+                        LanguageManager.getString("error.config.serialize"), 
+                        LanguageManager.getString("dialog.error.export.title"), 
+                        JOptionPane.ERROR_MESSAGE);
                     return;
                 }
                 
                 // 使用OutputStreamWriter以UTF-8编码写入文件
-                try (OutputStreamWriter writer = new OutputStreamWriter(Files.newOutputStream(fileToSave.toPath()), StandardCharsets.UTF_8)) {
+                try (OutputStreamWriter writer = new OutputStreamWriter(new FileOutputStream(fileToSave), StandardCharsets.UTF_8)) {
                     writer.write(jsonString);
                 }
                 
-                JOptionPane.showMessageDialog(this, "配置导出成功！\n文件位置: " + fileToSave.getAbsolutePath(), "导出成功", JOptionPane.INFORMATION_MESSAGE);
+                JOptionPane.showMessageDialog(this, 
+                    "<html>" + LanguageManager.getString("dialog.success.export.message") + 
+                    "<br>" + LanguageManager.getString("info.export.path", fileToSave.getAbsolutePath()) + "</html>", 
+                    LanguageManager.getString("dialog.success.export.title"), 
+                    JOptionPane.INFORMATION_MESSAGE);
             } catch (SecurityException ex) {
-                JOptionPane.showMessageDialog(this, "没有权限写入文件: " + ex.getMessage(), "导出失败", JOptionPane.ERROR_MESSAGE);
-                BurpExtender.logError( ex.getLocalizedMessage());
+                JOptionPane.showMessageDialog(this, 
+                    LanguageManager.getString("error.file.write", ex.getMessage()), 
+                    LanguageManager.getString("dialog.error.export.title"), 
+                    JOptionPane.ERROR_MESSAGE);
+                ex.printStackTrace();
             } catch (IOException ex) {
-                JOptionPane.showMessageDialog(this, "文件写入失败: " + ex.getMessage(), "导出失败", JOptionPane.ERROR_MESSAGE);
-                BurpExtender.logError( ex.getLocalizedMessage());
+                JOptionPane.showMessageDialog(this, 
+                    LanguageManager.getString("error.file.write", ex.getMessage()), 
+                    LanguageManager.getString("dialog.error.export.title"), 
+                    JOptionPane.ERROR_MESSAGE);
+                ex.printStackTrace();
             } catch (Exception ex) {
-                JOptionPane.showMessageDialog(this, "导出配置失败: " + ex.getMessage(), "导出失败", JOptionPane.ERROR_MESSAGE);
-                BurpExtender.logError( ex.getLocalizedMessage());
+                JOptionPane.showMessageDialog(this, 
+                    LanguageManager.getString("dialog.error.export.message", ex.getMessage()), 
+                    LanguageManager.getString("dialog.error.export.title"), 
+                    JOptionPane.ERROR_MESSAGE);
+                ex.printStackTrace();
             }
         }
     }
@@ -293,8 +386,9 @@ public class TabUI extends JPanel {
      */
     private void importConfig() {
         JFileChooser fileChooser = new JFileChooser();
-        fileChooser.setDialogTitle("导入配置文件");
-        FileNameExtensionFilter filter = new FileNameExtensionFilter("JSON files", "json");
+        fileChooser.setDialogTitle(LanguageManager.getString("dialog.import.title"));
+        FileNameExtensionFilter filter = new FileNameExtensionFilter(
+            LanguageManager.getString("dialog.filechooser.filter"), "json");
         fileChooser.setFileFilter(filter);
         
         int userSelection = fileChooser.showOpenDialog(this);
@@ -304,21 +398,27 @@ public class TabUI extends JPanel {
             
             // 检查文件是否存在
             if (selectedFile == null || !selectedFile.exists()) {
-                JOptionPane.showMessageDialog(this, "选择的文件不存在！", "导入失败", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this, 
+                    LanguageManager.getString("error.file.notExist"), 
+                    LanguageManager.getString("dialog.error.import.title"), 
+                    JOptionPane.ERROR_MESSAGE);
                 return;
             }
             
             // 检查文件是否可读
             if (!selectedFile.canRead()) {
-                JOptionPane.showMessageDialog(this, "无法读取文件: " + selectedFile.getAbsolutePath(), "导入失败", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this, 
+                    LanguageManager.getString("error.file.read", selectedFile.getAbsolutePath()), 
+                    LanguageManager.getString("dialog.error.import.title"), 
+                    JOptionPane.ERROR_MESSAGE);
                 return;
             }
             
             // 检查文件扩展名
             if (!selectedFile.getName().toLowerCase().endsWith(".json")) {
                 int option = JOptionPane.showConfirmDialog(this,
-                        "选择的文件不是JSON格式，是否继续导入？",
-                        "文件格式警告",
+                        LanguageManager.getString("warning.file.format.message"),
+                        LanguageManager.getString("warning.file.format.title"),
                         JOptionPane.YES_NO_OPTION,
                         JOptionPane.WARNING_MESSAGE);
                 if (option != JOptionPane.YES_OPTION) {
@@ -329,7 +429,10 @@ public class TabUI extends JPanel {
             // 检查文件大小（防止过大的文件）
             long fileSize = selectedFile.length();
             if (fileSize > 10 * 1024 * 1024) { // 10MB
-                JOptionPane.showMessageDialog(this, "配置文件过大（超过10MB），无法导入！", "导入失败", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this, 
+                    LanguageManager.getString("error.file.tooLarge"), 
+                    LanguageManager.getString("dialog.error.import.title"), 
+                    JOptionPane.ERROR_MESSAGE);
                 return;
             }
             
@@ -338,7 +441,7 @@ public class TabUI extends JPanel {
                 StringBuilder jsonString = new StringBuilder();
                 char[] buffer = new char[1024];
                 int length;
-                try (InputStreamReader reader = new InputStreamReader(Files.newInputStream(selectedFile.toPath()), StandardCharsets.UTF_8)) {
+                try (InputStreamReader reader = new InputStreamReader(new FileInputStream(selectedFile), StandardCharsets.UTF_8)) {
                     while ((length = reader.read(buffer)) != -1) {
                         jsonString.append(buffer, 0, length);
                     }
@@ -346,7 +449,10 @@ public class TabUI extends JPanel {
                 
                 // 检查读取的内容是否为空
                 if (jsonString.toString().trim().isEmpty()) {
-                    JOptionPane.showMessageDialog(this, "配置文件内容为空！", "导入失败", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(this, 
+                        LanguageManager.getString("error.file.emptyContent"), 
+                        LanguageManager.getString("dialog.error.import.title"), 
+                        JOptionPane.ERROR_MESSAGE);
                     return;
                 }
                 
@@ -355,30 +461,45 @@ public class TabUI extends JPanel {
                 
                 // 检查解析结果
                 if (config == null) {
-                    JOptionPane.showMessageDialog(this, "配置文件格式错误，无法解析！", "导入失败", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(this, 
+                        LanguageManager.getString("error.file.format"), 
+                        LanguageManager.getString("dialog.error.import.title"), 
+                        JOptionPane.ERROR_MESSAGE);
                     return;
                 }
                 
                 // 确认是否要导入配置
                 int option = JOptionPane.showConfirmDialog(this, 
-                    "导入配置将覆盖当前所有配置，是否继续？", 
-                    "确认导入", 
+                    LanguageManager.getString("dialog.confirm.import.message"), 
+                    LanguageManager.getString("dialog.confirm.import.title"), 
                     JOptionPane.YES_NO_OPTION);
                 
                 if (option == JOptionPane.YES_OPTION) {
                     // 应用导入的配置
                     applyConfig(config);
-                    JOptionPane.showMessageDialog(this, "配置导入成功！", "导入成功", JOptionPane.INFORMATION_MESSAGE);
+                    JOptionPane.showMessageDialog(this, 
+                        LanguageManager.getString("dialog.success.import.message"), 
+                        LanguageManager.getString("dialog.success.import.title"), 
+                        JOptionPane.INFORMATION_MESSAGE);
                 }
             } catch (SecurityException ex) {
-                JOptionPane.showMessageDialog(this, "没有权限读取文件: " + ex.getMessage(), "导入失败", JOptionPane.ERROR_MESSAGE);
-                BurpExtender.logError( ex.getLocalizedMessage());
+                JOptionPane.showMessageDialog(this, 
+                    LanguageManager.getString("error.file.read", ex.getMessage()), 
+                    LanguageManager.getString("dialog.error.import.title"), 
+                    JOptionPane.ERROR_MESSAGE);
+                ex.printStackTrace();
             } catch (IOException ex) {
-                JOptionPane.showMessageDialog(this, "文件读取失败: " + ex.getMessage(), "导入失败", JOptionPane.ERROR_MESSAGE);
-                BurpExtender.logError( ex.getLocalizedMessage());
+                JOptionPane.showMessageDialog(this, 
+                    LanguageManager.getString("error.file.read", ex.getMessage()), 
+                    LanguageManager.getString("dialog.error.import.title"), 
+                    JOptionPane.ERROR_MESSAGE);
+                ex.printStackTrace();
             } catch (Exception ex) {
-                JOptionPane.showMessageDialog(this, "导入配置失败: " + ex.getMessage(), "导入失败", JOptionPane.ERROR_MESSAGE);
-                BurpExtender.logError( ex.getLocalizedMessage());
+                JOptionPane.showMessageDialog(this, 
+                    LanguageManager.getString("dialog.error.import.message", ex.getMessage()), 
+                    LanguageManager.getString("dialog.error.import.title"), 
+                    JOptionPane.ERROR_MESSAGE);
+                ex.printStackTrace();
             }
         }
     }
@@ -391,7 +512,10 @@ public class TabUI extends JPanel {
         try {
             // 检查配置是否为空
             if (config == null) {
-                JOptionPane.showMessageDialog(this, "导入的配置为空！", "导入失败", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this, 
+                    LanguageManager.getString("error.config.empty"), 
+                    LanguageManager.getString("dialog.error.import.title"), 
+                    JOptionPane.ERROR_MESSAGE);
                 return;
             }
             
@@ -423,8 +547,11 @@ public class TabUI extends JPanel {
                 tableModel.setKeyMap(config.getKeyMap());
             }
         } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, "应用配置时发生错误: " + ex.getMessage(), "导入失败", JOptionPane.ERROR_MESSAGE);
-            BurpExtender.logError( ex.getLocalizedMessage());
+            JOptionPane.showMessageDialog(this, 
+                LanguageManager.getString("error.apply.config", ex.getMessage()), 
+                LanguageManager.getString("dialog.error.import.title"), 
+                JOptionPane.ERROR_MESSAGE);
+            ex.printStackTrace();
         }
     }
 }
