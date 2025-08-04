@@ -68,7 +68,8 @@
                                             <format property="timestamp" pattern="yyyyMMddHHmmss"/>
                                         </tstamp>
                                         <echo message="Copying JAR with timestamp because debug is enabled"/>
-                                        <copy file="${project.build.directory}/${project.artifactId}-${project.version}.jar" 
+                                        <!--suppress MavenModelInspection -->
+                                        <copy file="${project.build.directory}/${project.artifactId}-${project.version}.jar"
                                               tofile="${project.build.directory}/${project.artifactId}-${project.version}-${timestamp}.jar"/>
                                     </target>
                                 </configuration>

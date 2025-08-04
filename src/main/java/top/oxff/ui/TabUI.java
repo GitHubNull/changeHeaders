@@ -14,9 +14,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 import static burp.BurpExtender.TOOL_FLAGS;
 import static burp.BurpExtender.tableModel;

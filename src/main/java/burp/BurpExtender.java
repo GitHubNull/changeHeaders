@@ -62,6 +62,7 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
     }
 
 
+
     private void saveExConfig() {
         ExtenderConfig extenderConfig = tabUI.getExtenderConfig();
         String jsonString = JSON.toJSONString(extenderConfig);
