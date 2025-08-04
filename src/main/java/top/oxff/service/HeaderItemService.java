@@ -131,6 +131,18 @@ public class HeaderItemService {
     synchronized public static void setHeaderItemList(List<HeaderItem> headerItemList) {
         HeaderItemService.headerItemList.clear();
         HeaderItemService.headerItemList.addAll(headerItemList);
+        
+        // 更新每个HeaderItem的ID以匹配其在列表中的索引
+        for (int i = 0; i < HeaderItemService.headerItemList.size(); i++) {
+            HeaderItemService.headerItemList.get(i).setId(i);
+        }
+        
+        // 重新构建keyMap
+        keyMap.clear();
+        for (int i = 0; i < HeaderItemService.headerItemList.size(); i++) {
+            HeaderItem item = HeaderItemService.headerItemList.get(i);
+            keyMap.put(item.getKey(), i);
+        }
     }
 
     synchronized public static void setKeyMap(Map<String, Integer> keyMap) {
@@ -145,4 +157,3 @@ public class HeaderItemService {
         return keyMap.containsKey(key);
     }
 }
-

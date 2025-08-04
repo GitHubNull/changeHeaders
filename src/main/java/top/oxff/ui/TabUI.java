@@ -6,6 +6,7 @@ import top.oxff.control.HeaderItemController;
 import top.oxff.model.ExtenderConfig;
 import top.oxff.model.HeaderItem;
 import top.oxff.util.LanguageManager;
+import top.oxff.util.ClipboardImporter;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -49,6 +50,9 @@ public class TabUI extends JPanel {
     // 添加导入导出按钮
     JButton exportConfigBtn;
     JButton importConfigBtn;
+    
+    // 添加从剪贴板导入按钮
+    JButton importFromClipboardBtn;
     
     // 语言切换按钮
     JButton languageSwitchBtn;
@@ -176,25 +180,26 @@ public class TabUI extends JPanel {
         // 添加导入导出按钮
         exportConfigBtn = new JButton(LanguageManager.getString("button.exportConfig"));
         importConfigBtn = new JButton(LanguageManager.getString("button.importConfig"));
+        importFromClipboardBtn = new JButton(LanguageManager.getString("button.importFromClipboard"));
         
-        exportConfigBtn.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                exportConfig();
-            }
-        });
+        exportConfigBtn.addActionListener(e -> exportConfig());
         
-        importConfigBtn.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                importConfig();
-            }
+        importConfigBtn.addActionListener(e -> importConfig());
+        
+        importFromClipboardBtn.addActionListener(e -> {
+            // 调用ClipboardImporter类的方法处理剪贴板导入
+            ClipboardImporter.importFromClipboard(TabUI.this, (headerItems) -> {
+                for (HeaderItem item : headerItems) {
+                    addHeaderItem(item);
+                }
+            });
         });
 
         optPanel1.add(addBtn);
         optPanel1.add(delBtn);
         optPanel1.add(exportConfigBtn);
         optPanel1.add(importConfigBtn);
+        optPanel1.add(importFromClipboardBtn);
 
         southPanel.add(optPanel1, BorderLayout.CENTER);
 
@@ -281,6 +286,7 @@ public class TabUI extends JPanel {
         clearAllConfigBtn.setText(LanguageManager.getString("button.clearAllConfig"));
         exportConfigBtn.setText(LanguageManager.getString("button.exportConfig"));
         importConfigBtn.setText(LanguageManager.getString("button.importConfig"));
+        importFromClipboardBtn.setText(LanguageManager.getString("button.importFromClipboard"));
     }
     
     /**
@@ -479,24 +485,18 @@ public class TabUI extends JPanel {
                         LanguageManager.getString("dialog.success.import.title"), 
                         JOptionPane.INFORMATION_MESSAGE);
                 }
-            } catch (SecurityException ex) {
+            } catch (SecurityException | IOException ex) {
                 JOptionPane.showMessageDialog(this, 
                     LanguageManager.getString("error.file.read", ex.getMessage()), 
                     LanguageManager.getString("dialog.error.import.title"), 
                     JOptionPane.ERROR_MESSAGE);
-                ex.printStackTrace();
-            } catch (IOException ex) {
-                JOptionPane.showMessageDialog(this, 
-                    LanguageManager.getString("error.file.read", ex.getMessage()), 
-                    LanguageManager.getString("dialog.error.import.title"), 
-                    JOptionPane.ERROR_MESSAGE);
-                ex.printStackTrace();
+                BurpExtender.logError(ex.getMessage());
             } catch (Exception ex) {
                 JOptionPane.showMessageDialog(this, 
                     LanguageManager.getString("dialog.error.import.message", ex.getMessage()), 
                     LanguageManager.getString("dialog.error.import.title"), 
                     JOptionPane.ERROR_MESSAGE);
-                ex.printStackTrace();
+                BurpExtender.logError(ex.getMessage());
             }
         }
     }
@@ -549,6 +549,23 @@ public class TabUI extends JPanel {
                 LanguageManager.getString("dialog.error.import.title"), 
                 JOptionPane.ERROR_MESSAGE);
             ex.printStackTrace();
+        }
+    }
+    
+    /**
+     * 添加HeaderItem到表格中
+     * 供ClipboardImporter类调用
+     * @param item 要添加的HeaderItem
+     */
+    public void addHeaderItem(HeaderItem item) {
+        // 检查是否已存在相同键的请求头
+        if (!tableModel.isExist(item.getKey())) {
+            tableModel.addRow(item);
+        } else {
+            // 如果已存在，更新值
+            HeaderItem existingItem = tableModel.getHeaderItemByKey(item.getKey());
+            existingItem.setValue(item.getValue());
+            tableModel.updateRow(tableModel.getKeyMap().get(item.getKey()), existingItem);
         }
     }
 }

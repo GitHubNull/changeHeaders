@@ -54,6 +54,12 @@ With an intuitive GUI and robust configuration management, changeHeaders helps y
 1. **Automatic Mode**: Headers are automatically applied to requests based on module settings
 2. **Manual Mode**: Headers are applied only when manually triggered via context menu
 
+### 📋 New Feature Highlights
+- **Clipboard Import**: One-click import of HTTP headers from system clipboard, automatically parsed and let users choose which headers to add
+- **Smart Default Selection**: Common security-related headers (such as Cookie, Authorization, Token, etc.) are automatically selected by default
+- **Persistence Control**: Control whether each header is saved when the plugin is unloaded or exited. Headers imported from clipboard are not persistent by default
+- **Selective Persistence**: When exporting configuration or exiting the plugin, only headers marked as persistent are saved
+
 ## 📋 Installation
 
 ### Prerequisites
@@ -97,9 +103,10 @@ After installation, a new `changeHeaders_v1.9.0` tab will appear in Burp Suite:
 - Enable "popupMenu" for manual header application via context menu
 
 ### 2. Add Header Rules
-Two methods to add header rules:
+Three methods to add header rules:
 1. **Manual Addition**: Click `Add` in the main interface to create new header rules
 2. **From Request**: Select header text in any HTTP request and right-click to choose "新增自动替换头" or "新增手动触发替换头"
+3. **From Clipboard**: Click the "Import from Clipboard" button to automatically parse HTTP headers from the clipboard and let users choose which headers to add
 
 ### 3. Apply Headers to Requests
 Three methods to apply header modifications:
@@ -172,3 +179,14 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 - Thanks to the Burp Suite team for providing an excellent platform for security testing
 - Inspired by the need for more efficient HTTP header manipulation in web application testing
+
+## ⚠️ Disclaimer
+
+This tool is intended for legitimate security testing and research purposes only. Users are responsible for ensuring their use complies with all applicable laws and regulations. The author is not liable for any damages or legal consequences resulting from the use of this tool. Before using this tool for any testing, ensure you have explicit authorization from the owners of the target systems. Unauthorized system access may violate laws.
+
+By using this tool, you agree that:
+1. You will only use this tool on systems for which you have explicit authorization
+2. You will comply with all applicable local, state, and federal laws
+3. You understand that improper use may result in legal consequences
+4. The author is not responsible for misuse of the tool or any resulting damages
+5. When using this tool in a corporate or organizational environment, you will adhere to that organization's security policies and regulations

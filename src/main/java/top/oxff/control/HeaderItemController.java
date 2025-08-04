@@ -42,7 +42,7 @@ public class HeaderItemController {
 
     public static boolean updateHeaderItem(HeaderItem oldHeaderItem, String key, String value, String description, boolean proxyEnable,
                                            boolean repeaterEnable, boolean intruderEnable, boolean scannerEnable,
-                                           boolean extenderEnable, boolean popupMenuEnable) {
+                                           boolean extenderEnable, boolean popupMenuEnable, boolean persistent) {
         HeaderItem newHeaderItem = new HeaderItem();
         newHeaderItem.setId(oldHeaderItem.getId());
         newHeaderItem.setKey(key);
@@ -54,6 +54,7 @@ public class HeaderItemController {
         newHeaderItem.setScannerEnable(scannerEnable);
         newHeaderItem.setExtenderEnable(extenderEnable);
         newHeaderItem.setPopupMenuEnable(popupMenuEnable);
+        newHeaderItem.setPersistent(persistent);
         return HeaderItemService.updateHeaderItem(oldHeaderItem, newHeaderItem);
     }
 
@@ -72,6 +73,7 @@ public class HeaderItemController {
         newHeaderItem.setExtenderEnable(oldHeaderItem.isExtenderEnable());
         newHeaderItem.setScannerEnable(oldHeaderItem.isScannerEnable());
         newHeaderItem.setPopupMenuEnable(oldHeaderItem.isPopupMenuEnable());
+        newHeaderItem.setPersistent(oldHeaderItem.isPersistent());
         newHeaderItem.setDescription(oldHeaderItem.getDescription());
 
         return HeaderItemService.updateHeaderItem(oldHeaderItem, newHeaderItem);
@@ -88,6 +90,7 @@ public class HeaderItemController {
         newHeaderItem.setExtenderEnable(oldHeaderItem.isExtenderEnable());
         newHeaderItem.setScannerEnable(oldHeaderItem.isScannerEnable());
         newHeaderItem.setPopupMenuEnable(oldHeaderItem.isPopupMenuEnable());
+        newHeaderItem.setPersistent(oldHeaderItem.isPersistent());
         newHeaderItem.setDescription(oldHeaderItem.getDescription());
 
         return HeaderItemService.updateHeaderItem(oldHeaderItem, newHeaderItem);
@@ -104,6 +107,7 @@ public class HeaderItemController {
         newHeaderItem.setExtenderEnable(oldHeaderItem.isExtenderEnable());
         newHeaderItem.setScannerEnable(oldHeaderItem.isScannerEnable());
         newHeaderItem.setPopupMenuEnable(oldHeaderItem.isPopupMenuEnable());
+        newHeaderItem.setPersistent(oldHeaderItem.isPersistent());
         newHeaderItem.setDescription(oldHeaderItem.getDescription());
 
         return HeaderItemService.updateHeaderItem(oldHeaderItem, newHeaderItem);
@@ -120,6 +124,7 @@ public class HeaderItemController {
         newHeaderItem.setExtenderEnable(extenderEnable);
         newHeaderItem.setScannerEnable(oldHeaderItem.isScannerEnable());
         newHeaderItem.setPopupMenuEnable(oldHeaderItem.isPopupMenuEnable());
+        newHeaderItem.setPersistent(oldHeaderItem.isPersistent());
         newHeaderItem.setDescription(oldHeaderItem.getDescription());
 
         return HeaderItemService.updateHeaderItem(oldHeaderItem, newHeaderItem);
@@ -136,6 +141,7 @@ public class HeaderItemController {
         newHeaderItem.setExtenderEnable(oldHeaderItem.isExtenderEnable());
         newHeaderItem.setScannerEnable(scannerEnable);
         newHeaderItem.setPopupMenuEnable(oldHeaderItem.isPopupMenuEnable());
+        newHeaderItem.setPersistent(oldHeaderItem.isPersistent());
         newHeaderItem.setDescription(oldHeaderItem.getDescription());
 
         return HeaderItemService.updateHeaderItem(oldHeaderItem, newHeaderItem);
@@ -152,6 +158,7 @@ public class HeaderItemController {
         newHeaderItem.setExtenderEnable(oldHeaderItem.isExtenderEnable());
         newHeaderItem.setScannerEnable(oldHeaderItem.isScannerEnable());
         newHeaderItem.setPopupMenuEnable(popupMenuEnable);
+        newHeaderItem.setPersistent(oldHeaderItem.isPersistent());
         newHeaderItem.setDescription(oldHeaderItem.getDescription());
         return HeaderItemService.updateHeaderItem(oldHeaderItem, newHeaderItem);
     }
@@ -206,6 +213,8 @@ public class HeaderItemController {
                 return headerItem.isPopupMenuEnable();
             case 9:
                 return headerItem.getDescription();
+            case 10:
+                return headerItem.isPersistent();
             default:
                 return null;
         }

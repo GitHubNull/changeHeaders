@@ -16,6 +16,8 @@ public class HeaderItem {
     boolean extenderEnable;
     boolean popupMenuEnable;
     String description;
+    // 添加持久化控制字段，默认为true表示需要持久化
+    boolean persistent = true;
 
     public boolean isEnableTool(int toolFlag) {
         switch (toolFlag) {

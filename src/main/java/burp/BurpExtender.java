@@ -4,6 +4,7 @@ import com.alibaba.fastjson2.JSON;
 import top.oxff.control.ContextMenuFactoryIml;
 import top.oxff.control.HttpProcess;
 import top.oxff.model.ExtenderConfig;
+import top.oxff.model.HeaderItem;
 import top.oxff.model.HeaderItemTableModel;
 import top.oxff.ui.TabUI;
 
@@ -11,9 +12,10 @@ import javax.swing.*;
 import java.awt.*;
 import java.io.PrintWriter;
 import java.util.*;
+import java.util.List;
 
 public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListener {
-    final static String NAME = "changeHeaders_v1.9.0";
+    final static String NAME = "changeHeaders_v2.0.0";
 
     public static IBurpExtenderCallbacks burpExtenderCallbacks;
 
@@ -65,6 +67,19 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 
     private void saveExConfig() {
         ExtenderConfig extenderConfig = tabUI.getExtenderConfig();
+        
+        // 过滤掉非持久化的HeaderItem
+        List<HeaderItem> allItems = extenderConfig.getHeaderItemList();
+        if (allItems != null) {
+            List<HeaderItem> persistentItems = new ArrayList<>();
+            for (HeaderItem item : allItems) {
+                if (item.isPersistent()) {
+                    persistentItems.add(item);
+                }
+            }
+            extenderConfig.setHeaderItemList(persistentItems);
+        }
+        
         String jsonString = JSON.toJSONString(extenderConfig);
         burpExtenderCallbacks.saveExtensionSetting(ExtenderConfig_NAME, jsonString);
     }
