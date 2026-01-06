@@ -59,6 +59,7 @@ With an intuitive GUI and robust configuration management, changeHeaders helps y
 - **Smart Default Selection**: Common security-related headers (such as Cookie, Authorization, Token, etc.) are automatically selected by default
 - **Persistence Control**: Control whether each header is saved when the plugin is unloaded or exited. Headers imported from clipboard are not persistent by default
 - **Selective Persistence**: When exporting configuration or exiting the plugin, only headers marked as persistent are saved
+- **Popup Menu Header Import**: Import headers with popup menu enabled (popupMenuEnable) from a dialog window accessed via a button below the table, facilitating quick copying and management of commonly used manual replacement rules
 
 ## 📋 Installation
 
@@ -103,10 +104,11 @@ After installation, a new `changeHeaders_v1.9.0` tab will appear in Burp Suite:
 - Enable "popupMenu" for manual header application via context menu
 
 ### 2. Add Header Rules
-Three methods to add header rules:
+Four methods to add header rules:
 1. **Manual Addition**: Click `Add` in the main interface to create new header rules
 2. **From Request**: Select header text in any HTTP request and right-click to choose "新增自动替换头" or "新增手动触发替换头"
 3. **From Clipboard**: Click the "Import from Clipboard" button to automatically parse HTTP headers from the clipboard and let users choose which headers to add
+4. **Import Popup Menu Headers**: Click the "Import Popup Menu Headers" button to select and import headers that have popupMenu enabled, making it easy to reuse manual trigger replacement rules
 
 ### 3. Apply Headers to Requests
 Three methods to apply header modifications:

@@ -7,6 +7,7 @@ import top.oxff.model.ExtenderConfig;
 import top.oxff.model.HeaderItem;
 import top.oxff.util.LanguageManager;
 import top.oxff.util.ClipboardImporter;
+import top.oxff.util.PopupMenuHeaderImporter;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -53,6 +54,9 @@ public class TabUI extends JPanel {
     
     // 添加从剪贴板导入按钮
     JButton importFromClipboardBtn;
+    
+    // 添加从右键替换头导入按钮
+    JButton importPopupMenuHeadersBtn;
     
     // 语言切换按钮
     JButton languageSwitchBtn;
@@ -194,12 +198,24 @@ public class TabUI extends JPanel {
                 }
             });
         });
+        
+        // 添加从右键替换头导入按钮及事件处理
+        importPopupMenuHeadersBtn = new JButton(LanguageManager.getString("button.importPopupMenuHeaders"));
+        importPopupMenuHeadersBtn.addActionListener(e -> {
+            // 调用PopupMenuHeaderImporter类的方法从剪贴板导入
+            PopupMenuHeaderImporter.importFromClipboard(TabUI.this, (headerItems) -> {
+                for (HeaderItem item : headerItems) {
+                    addHeaderItem(item);
+                }
+            });
+        });
 
         optPanel1.add(addBtn);
         optPanel1.add(delBtn);
         optPanel1.add(exportConfigBtn);
         optPanel1.add(importConfigBtn);
         optPanel1.add(importFromClipboardBtn);
+        optPanel1.add(importPopupMenuHeadersBtn);
 
         southPanel.add(optPanel1, BorderLayout.CENTER);
 
@@ -287,6 +303,7 @@ public class TabUI extends JPanel {
         exportConfigBtn.setText(LanguageManager.getString("button.exportConfig"));
         importConfigBtn.setText(LanguageManager.getString("button.importConfig"));
         importFromClipboardBtn.setText(LanguageManager.getString("button.importFromClipboard"));
+        importPopupMenuHeadersBtn.setText(LanguageManager.getString("button.importPopupMenuHeaders"));
     }
     
     /**
