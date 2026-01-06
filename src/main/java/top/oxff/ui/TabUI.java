@@ -172,12 +172,13 @@ public class TabUI extends JPanel {
 
         delBtn.addActionListener(e -> {
             int[] selectedRows = table.getSelectedRows();
-            if (null == selectedRows) {
+            if (null == selectedRows || selectedRows.length == 0) {
                 return;
             }
 
-            for (int selectedRow : selectedRows) {
-                tableModel.removeRow(selectedRow);
+            // 从后往前删除，避免索引变化导致的错误
+            for (int i = selectedRows.length - 1; i >= 0; i--) {
+                tableModel.removeRow(selectedRows[i]);
             }
         });
         
