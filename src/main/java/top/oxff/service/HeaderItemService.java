@@ -28,15 +28,27 @@ public class HeaderItemService {
             return false; // 或者抛出异常
         }
         Iterator<HeaderItem> iterator = headerItemList.iterator();
+        boolean removed = false;
         while (iterator.hasNext()) {
             HeaderItem item = iterator.next();
             if (item.getId() == id) {
                 iterator.remove();
-                keyMap.remove(item.getKey());
-                return true;
+                removed = true;
+                break;
             }
         }
-        return false;
+        
+        if (removed) {
+            // 重新构建keyMap，因为删除后索引发生变化
+            keyMap.clear();
+            for (int i = 0; i < headerItemList.size(); i++) {
+                HeaderItem currentItem = headerItemList.get(i);
+                currentItem.setId(i); // 更新ID
+                keyMap.put(currentItem.getKey(), i);
+            }
+        }
+        
+        return removed;
     }
 
     synchronized public static boolean deleteHeaderItemByIndex(int index) {
@@ -44,7 +56,15 @@ public class HeaderItemService {
             return false; // 或者抛出异常
         }
         HeaderItem item = headerItemList.remove(index);
-        keyMap.remove(item.getKey());
+        
+        // 重新构建keyMap，因为删除后索引发生变化
+        keyMap.clear();
+        for (int i = 0; i < headerItemList.size(); i++) {
+            HeaderItem currentItem = headerItemList.get(i);
+            currentItem.setId(i); // 更新ID
+            keyMap.put(currentItem.getKey(), i);
+        }
+        
         return true;
     }
 
@@ -97,7 +117,12 @@ public class HeaderItemService {
         if (key == null || key.isEmpty() || key.trim().isEmpty() || !keyMap.containsKey(key)){
             return null;
         }
-        return headerItemList.get(keyMap.get(key));
+        Integer index = keyMap.get(key);
+        // 增加索引边界检查，防止IndexOutOfBoundsException
+        if (index == null || index < 0 || index >= headerItemList.size()) {
+            return null;
+        }
+        return headerItemList.get(index);
     }
 
     synchronized public static List<HeaderItem> getHeaderItemList() {
@@ -121,7 +146,19 @@ public class HeaderItemService {
         if (headerItem == null){
             return false;
         }
-        return headerItemList.remove(headerItem);
+        boolean removed = headerItemList.remove(headerItem);
+        
+        if (removed) {
+            // 重新构建keyMap，因为删除后索引发生变化
+            keyMap.clear();
+            for (int i = 0; i < headerItemList.size(); i++) {
+                HeaderItem currentItem = headerItemList.get(i);
+                currentItem.setId(i); // 更新ID
+                keyMap.put(currentItem.getKey(), i);
+            }
+        }
+        
+        return removed;
     }
 
     synchronized public static Map<String, Integer> getKeyMap(){
