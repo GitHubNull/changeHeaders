@@ -187,27 +187,6 @@ Quickly switch between different authentication tokens or API keys.
    
    *Right-click in HTTP editor and select "Replace" to manually apply configured headers*
 
-## 🤝 Contributing
-
-Contributions are welcome! Here's how you can help:
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
-Please ensure your code follows the existing style and includes appropriate tests.
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 📞 Support
-
-- For bug reports and feature requests, please use [GitHub Issues](https://github.com/your-repo/changeHeaders/issues)
-- For general questions, check the documentation or contact the maintainers
-
 ## 🧪 Test HTTP Service
 
 The project includes a built-in HTTP service for testing plugin functionality, located in the `onlineStore/` directory.
@@ -249,6 +228,27 @@ After starting, visit http://127.0.0.1:8888 to use the test interface.
 | IP | `/api/ip/internal-only` | X-Forwarded-For: 192.168.x.x |
 | UA | `/api/ua/mobile-only` | User-Agent contains iPhone/Android |
 | Combined | `/api/admin/panel` | Basic + AdminToken + Internal IP |
+
+## 🤝 Contributing
+
+Contributions are welcome! Here's how you can help:
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+Please ensure your code follows the existing style and includes appropriate tests.
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 📞 Support
+
+- For bug reports and feature requests, please use [GitHub Issues](https://github.com/your-repo/changeHeaders/issues)
+- For general questions, check the documentation or contact the maintainers
 
 ## 🙏 Acknowledgments
 

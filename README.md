@@ -187,27 +187,6 @@ X-API-Key: <key>
    
    *在HTTP编辑器中右键点击选择"替换",手动应用已配置的请求头*
 
-## 🤝 贡献
-
-欢迎贡献代码！您可以按以下方式帮助我们：
-
-1. Fork仓库
-2. 创建功能分支（`git checkout -b feature/AmazingFeature`）
-3. 提交您的更改（`git commit -m 'Add some AmazingFeature'`）
-4. 推送到分支（`git push origin feature/AmazingFeature`）
-5. 发起Pull Request
-
-请确保您的代码遵循现有风格并包含适当的测试。
-
-## 📄 许可证
-
-本项目采用MIT许可证 - 详见[LICENSE](LICENSE)文件。
-
-## 📞 支持
-
-- 对于错误报告和功能请求，请使用[GitHub Issues](https://github.com/your-repo/changeHeaders/issues)
-- 对于一般问题，请查看文档或联系维护人员
-
 ## 🧪 测试HTTP服务
 
 项目内置了一个专用于测试插件功能的HTTP服务，位于`onlineStore/`目录。
@@ -249,6 +228,27 @@ python server.py
 | IP | `/api/ip/internal-only` | X-Forwarded-For: 192.168.x.x |
 | UA | `/api/ua/mobile-only` | User-Agent 含 iPhone/Android |
 | 综合 | `/api/admin/panel` | Basic + AdminToken + 内网IP |
+
+## 🤝 贡献
+
+欢迎贡献代码！您可以按以下方式帮助我们：
+
+1. Fork仓库
+2. 创建功能分支（`git checkout -b feature/AmazingFeature`）
+3. 提交您的更改（`git commit -m 'Add some AmazingFeature'`）
+4. 推送到分支（`git push origin feature/AmazingFeature`）
+5. 发起Pull Request
+
+请确保您的代码遵循现有风格并包含适当的测试。
+
+## 📄 许可证
+
+本项目采用MIT许可证 - 详见[LICENSE](LICENSE)文件。
+
+## 📞 支持
+
+- 对于错误报告和功能请求，请使用[GitHub Issues](https://github.com/your-repo/changeHeaders/issues)
+- 对于一般问题，请查看文档或联系维护人员
 
 ## 🙏 致谢
 
