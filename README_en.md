@@ -208,6 +208,48 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - For bug reports and feature requests, please use [GitHub Issues](https://github.com/your-repo/changeHeaders/issues)
 - For general questions, check the documentation or contact the maintainers
 
+## 🧪 Test HTTP Service
+
+The project includes a built-in HTTP service for testing plugin functionality, located in the `onlineStore/` directory.
+
+### Features
+- **Multiple validation endpoints**: Authentication, Cookie, IP spoofing, User-Agent and more
+- **Modular design**: Frontend and backend separation for easy maintenance
+- **Logging**: Console and file dual output support
+- **Web interface**: Clean and intuitive testing interface
+
+### Quick Start
+
+```bash
+# Enter the test service directory
+cd onlineStore
+
+# Start the service
+python server.py
+
+# Or double-click start.bat on Windows
+```
+
+After starting, visit http://127.0.0.1:8888 to use the test interface.
+
+### Testing Flow
+1. Access test endpoint directly → See failure message (missing required headers)
+2. Copy the required header rules from the prompt
+3. Configure rules in changeHeaders plugin
+4. Access again through BurpSuite proxy → Verification successful
+
+### API Endpoints
+
+| Category | Endpoint | Required Header |
+|----------|----------|----------------|
+| Auth | `/api/auth/bearer` | Authorization: Bearer xxx |
+| Auth | `/api/auth/basic` | Authorization: Basic (admin:password123) |
+| Auth | `/api/auth/api-key` | X-API-Key: test-api-key-12345 |
+| Cookie | `/api/session/required` | Cookie: session=abc123xyz789 |
+| IP | `/api/ip/internal-only` | X-Forwarded-For: 192.168.x.x |
+| UA | `/api/ua/mobile-only` | User-Agent contains iPhone/Android |
+| Combined | `/api/admin/panel` | Basic + AdminToken + Internal IP |
+
 ## 🙏 Acknowledgments
 
 - Thanks to the Burp Suite team for providing an excellent platform for security testing
