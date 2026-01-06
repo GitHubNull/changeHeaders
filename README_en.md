@@ -103,12 +103,28 @@ After installation, a new `changeHeaders_v1.9.0` tab will appear in Burp Suite:
 - Available modules: Proxy, Repeater, Intruder, Scanner, Extender
 - Enable "popupMenu" for manual header application via context menu
 
+![TabUI Main Interface](img/tabUI.png)
+
+*Main interface screenshot: Shows module selection, header management table, and function buttons*
+
 ### 2. Add Header Rules
 Four methods to add header rules:
+
 1. **Manual Addition**: Click `Add` in the main interface to create new header rules
+
 2. **From Request**: Select header text in any HTTP request and right-click to choose "新增自动替换头" or "新增手动触发替换头"
+
 3. **From Clipboard**: Click the "Import from Clipboard" button to automatically parse HTTP headers from the clipboard and let users choose which headers to add
+
+   ![Import from Clipboard](img/从剪贴板导入.png)
+   
+   *Import from Clipboard feature: Automatically parse HTTP headers with selection dialog*
+
 4. **Import Popup Menu Headers**: Click the "Import Popup Menu Headers" button to select and import headers that have popupMenu enabled, making it easy to reuse manual trigger replacement rules
+
+   ![Import Popup Menu Headers](img/导入右键替换头.png)
+   
+   *Import Popup Menu Headers: Import from clipboard and set as manual replacement mode*
 
 ### 3. Apply Headers to Requests
 Three methods to apply header modifications:
@@ -120,6 +136,10 @@ Three methods to apply header modifications:
 - **Export**: Save your header configurations to a JSON file for backup or sharing
 - **Import**: Load previously saved configurations
 - **Clear**: Remove all configurations with a single click
+
+![Export Configuration](img/导出配置文件.png)
+
+*Export Configuration: Save header configurations as JSON file for backup or sharing*
 
 ## 🎯 Use Cases
 
@@ -145,16 +165,27 @@ X-API-Key: <key>
 Quickly switch between different authentication tokens or API keys.
 
 ### Context Menu Usage
-1. **Auto Replace Headers**:
+
+1. **Select Headers for Context Menu Update**:
+   
+   ![Select Header for Context Menu](img/选择hearer进行鼠标右键菜单更新header的取值.png)
+   
+   *Select headers in HTTP request, right-click to choose auto or manual replacement mode*
+
+2. **Auto Replace Headers**:
    - Select header lines in any HTTP request
    - Right-click and choose "新增自动替换头"
    - Headers will be automatically applied to all requests in enabled modules
 
-2. **Manual Trigger Replace**:
+3. **Manual Trigger Replace**:
    - Select header lines in any HTTP request
    - Right-click and choose "新增手动触发替换头"
    - Enable "popupMenu" for these headers in the main interface
    - Right-click in any HTTP editor and select "替换" to apply these headers
+   
+   ![Context Menu Replace](img/鼠标右键菜单替换头.png)
+   
+   *Right-click in HTTP editor and select "Replace" to manually apply configured headers*
 
 ## 🤝 Contributing
 
