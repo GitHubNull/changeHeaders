@@ -13,9 +13,15 @@ public class HeaderItemService {
     synchronized public static int addHeaderItem(HeaderItem headerItem) {
         if (keyMap.containsKey(headerItem.getKey())) {
             int id = keyMap.get(headerItem.getKey());
-            headerItem.setId(id);
-            headerItemList.set(id, headerItem);
-            return id;
+            // 验证索引是否有效，防止keyMap与headerItemList不同步
+            if (id >= 0 && id < headerItemList.size()) {
+                headerItem.setId(id);
+                headerItemList.set(id, headerItem);
+                return id;
+            } else {
+                // 索引无效，移除旧的无效映射，当作新增处理
+                keyMap.remove(headerItem.getKey());
+            }
         }
         headerItem.setId(headerItemList.size());
         keyMap.put(headerItem.getKey(), headerItem.getId());
@@ -73,7 +79,15 @@ public class HeaderItemService {
             return false;
         }
         HeaderItem item = headerItemList.remove(index);
-        keyMap.remove(item.getKey());
+        
+        // 重新构建keyMap，因为删除后索引发生变化
+        keyMap.clear();
+        for (int i = 0; i < headerItemList.size(); i++) {
+            HeaderItem currentItem = headerItemList.get(i);
+            currentItem.setId(i); // 更新ID
+            keyMap.put(currentItem.getKey(), i);
+        }
+        
         return true;
     }
 
@@ -82,6 +96,10 @@ public class HeaderItemService {
             return false;
         }
         int id = oldHeaderItem.getId();
+        // 验证索引是否有效
+        if (id < 0 || id >= headerItemList.size()) {
+            return false;
+        }
         try {
             headerItemList.set(id, newHeaderItem);
             keyMap.remove(oldHeaderItem.getKey());
@@ -91,7 +109,6 @@ public class HeaderItemService {
             BurpExtender.stderr.println("updateHeaderItem error: " + e.getMessage());
             return false;
         }
-
     }
 
     synchronized public static HeaderItem getHeaderItemById(int id) {
