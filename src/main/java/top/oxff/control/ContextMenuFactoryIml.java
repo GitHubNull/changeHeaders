@@ -3,10 +3,16 @@ package top.oxff.control;
 import burp.*;
 import top.oxff.model.HeaderItem;
 import top.oxff.model.Option;
+import top.oxff.service.PreferenceMatcher;
+import top.oxff.service.PreferenceService;
 import top.oxff.util.BytesTools;
+import top.oxff.util.ClipboardImporter;
+import top.oxff.util.LanguageManager;
 
 import javax.swing.*;
+import java.awt.*;
 import java.util.*;
+import java.util.List;
 
 import static burp.BurpExtender.TOOL_FLAG_POPUP_MENU;
 import static burp.BurpExtender.tableModel;
@@ -33,7 +39,6 @@ public class ContextMenuFactoryIml implements IContextMenuFactory {
             caption = "新增手动触发替换头";
         }
         Set<Option> optionSet = new HashSet<>();
-//        optionSet.add(Option.ADD);
         for (String selectLine : selectLines) {
             String[] kvs = selectLine.split(":", 2);
             if (1 >= kvs.length) {
@@ -73,6 +78,8 @@ public class ContextMenuFactoryIml implements IContextMenuFactory {
         menuItem.setText(caption);
 
         menuItem.addActionListener(e -> {
+            // 将选中文本解析为HeaderItem列表
+            List<HeaderItem> headerItems = new ArrayList<>();
             for (String selectLine : selectLines) {
                 String[] kvs = selectLine.split(":", 2);
                 if (1 >= kvs.length) {
@@ -84,20 +91,60 @@ public class ContextMenuFactoryIml implements IContextMenuFactory {
                 if (k.isEmpty() || v.isEmpty()) {
                     continue;
                 }
-                
-                // 检查是否存在，如果存在则更新，否则新增
-                if (tableModel.isExist(k)) {
-                    // 更新现有条目
-                    HeaderItem existingItem = tableModel.getHeaderItemByKey(k);
-                    existingItem.setValue(v);
-                    // 保持其他设置不变
-                    tableModel.updateRow(tableModel.getKeyMap().get(k), existingItem);
-                } else {
-                    // 新增条目
-                    HeaderItem headerItem = getHeaderItem(k, v, popupMenuOption);
-                    tableModel.addRow(headerItem);
-                }
+
+                HeaderItem headerItem = getHeaderItem(k, v, popupMenuOption);
+                headerItems.add(headerItem);
             }
+
+            if (headerItems.isEmpty()) {
+                return;
+            }
+
+            // 使用偏好匹配确定自动勾选
+            List<String> candidateKeys = new ArrayList<>();
+            for (HeaderItem item : headerItems) {
+                candidateKeys.add(item.getKey());
+            }
+            Set<String> autoSelectedKeys;
+            if (PreferenceService.isInitialized()) {
+                List<String> persistedKeys = PreferenceService.getPersistedHeaderKeys();
+                List<String> builtinKeywords = PreferenceService.getBuiltinKeywords();
+                autoSelectedKeys = PreferenceMatcher.determineAutoSelectedKeys(candidateKeys, persistedKeys, builtinKeywords);
+            } else {
+                autoSelectedKeys = Collections.emptySet();
+            }
+
+            // 获取父窗口（使用Burp Suite的主框架窗口）
+            Component parentComponent = null; // 对话框将居中显示在屏幕上
+
+            // 显示选择对话框
+            ClipboardImporter.showHeaderSelectionDialog(
+                    parentComponent,
+                    headerItems,
+                    selectedItems -> {
+                        for (HeaderItem item : selectedItems) {
+                            // 重新设置工具启用状态
+                            HeaderItem finalItem = getHeaderItem(item.getKey(), item.getValue(), popupMenuOption);
+
+                            // 检查是否存在，如果存在则更新，否则新增
+                            if (tableModel.isExist(finalItem.getKey())) {
+                                HeaderItem existingItem = tableModel.getHeaderItemByKey(finalItem.getKey());
+                                existingItem.setValue(finalItem.getValue());
+                                tableModel.updateRow(tableModel.getKeyMap().get(finalItem.getKey()), existingItem);
+                            } else {
+                                tableModel.addRow(finalItem);
+                            }
+                        }
+
+                        // 持久化选中的请求头键名
+                        if (PreferenceService.isInitialized()) {
+                            for (HeaderItem item : selectedItems) {
+                                PreferenceService.addPersistedHeaderKey(item.getKey());
+                            }
+                        }
+                    },
+                    autoSelectedKeys
+            );
         });
         return menuItem;
     }

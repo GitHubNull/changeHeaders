@@ -46,20 +46,32 @@ public class TabUI extends JPanel {
     JPanel optPanel2;
 
     JButton clearAllConfigBtn;
-    
+
     // 添加导入导出按钮
     JButton exportConfigBtn;
     JButton importConfigBtn;
-    
+
     // 添加从剪贴板导入按钮
     JButton importFromClipboardBtn;
-    
+
     // 语言切换按钮
     JButton languageSwitchBtn;
     private boolean isChinese = true; // 默认中文
 
+    // 主Tab面板
+    JTabbedPane mainTabbedPane;
+
+    // 偏好管理面板
+    PreferencePanel preferencePanel;
+
+    // 请求头管理面板（包含north+center+south）
+    JPanel headerManagementPanel;
+
     public TabUI() {
         setLayout(new BorderLayout());
+
+        // 创建请求头管理面板（包含原有的north+center+south）
+        headerManagementPanel = new JPanel(new BorderLayout());
 
         northPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
 
@@ -138,7 +150,7 @@ public class TabUI extends JPanel {
             }
         });
 
-        add(northPanel, BorderLayout.NORTH);
+        headerManagementPanel.add(northPanel, BorderLayout.NORTH);
 
 
         table = new JTable();
@@ -147,7 +159,7 @@ public class TabUI extends JPanel {
 
         centerPanel = new JScrollPane(table, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 
-        add(centerPanel, BorderLayout.CENTER);
+        headerManagementPanel.add(centerPanel, BorderLayout.CENTER);
 
         southPanel = new JPanel(new BorderLayout());
 
@@ -222,7 +234,17 @@ public class TabUI extends JPanel {
 
         southPanel.add(optPanel2, BorderLayout.SOUTH);
 
-        add(southPanel, BorderLayout.SOUTH);
+        headerManagementPanel.add(southPanel, BorderLayout.SOUTH);
+
+        // 创建主Tab面板
+        mainTabbedPane = new JTabbedPane();
+        mainTabbedPane.addTab(LanguageManager.getString("tab.headerManagement"), headerManagementPanel);
+
+        // 创建偏好管理面板
+        preferencePanel = new PreferencePanel();
+        mainTabbedPane.addTab(LanguageManager.getString("tab.preferenceManagement"), preferencePanel);
+
+        add(mainTabbedPane, BorderLayout.CENTER);
 
     }
 
@@ -287,6 +309,13 @@ public class TabUI extends JPanel {
         exportConfigBtn.setText(LanguageManager.getString("button.exportConfig"));
         importConfigBtn.setText(LanguageManager.getString("button.importConfig"));
         importFromClipboardBtn.setText(LanguageManager.getString("button.importFromClipboard"));
+
+        // 更新Tab标题
+        mainTabbedPane.setTitleAt(0, LanguageManager.getString("tab.headerManagement"));
+        mainTabbedPane.setTitleAt(1, LanguageManager.getString("tab.preferenceManagement"));
+
+        // 更新偏好管理面板文本
+        preferencePanel.updateUIText();
     }
     
     /**

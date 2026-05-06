@@ -6,10 +6,12 @@ import top.oxff.control.HttpProcess;
 import top.oxff.model.ExtenderConfig;
 import top.oxff.model.HeaderItem;
 import top.oxff.model.HeaderItemTableModel;
+import top.oxff.service.PreferenceService;
 import top.oxff.ui.TabUI;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.File;
 import java.io.PrintWriter;
 import java.util.*;
 import java.util.List;
@@ -46,6 +48,10 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
         stderr = new PrintWriter(BurpExtender.burpExtenderCallbacks.getStderr(), true);
 
         tableModel = new HeaderItemTableModel();
+
+        // 在创建UI之前初始化偏好数据库，确保UI面板能正确加载数据
+        initPreferenceDatabase();
+
         tabUI = new TabUI();
 
         ContextMenuFactoryIml contextMenuFactoryIml = new ContextMenuFactoryIml();
@@ -110,6 +116,7 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 
     @Override
     public void extensionUnloaded() {
+        PreferenceService.shutdown();
         saveExConfig();
     }
 
@@ -129,6 +136,39 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 
     public static void logError(String error) {
         stderr.println(error);
+    }
+
+    /**
+     * 初始化偏好数据库
+     */
+    private void initPreferenceDatabase() {
+        try {
+            String dbPath = resolveDbPath();
+            PreferenceService.initDatabase(dbPath);
+        } catch (Exception e) {
+            logError("Failed to initialize preference database: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 解析偏好数据库文件路径
+     * 优先从Burp扩展设置中读取，若为空则使用默认路径并保存设置
+     */
+    private String resolveDbPath() {
+        String savedPath = burpExtenderCallbacks.loadExtensionSetting("changeHeadersDbPath");
+        if (savedPath != null && !savedPath.trim().isEmpty()) {
+            return savedPath;
+        }
+
+        // 默认路径：用户主目录下的.BurpSuite目录
+        String userHome = System.getProperty("user.home");
+        File burpDir = new File(userHome, ".BurpSuite");
+        if (!burpDir.exists()) {
+            burpDir.mkdirs();
+        }
+        String dbPath = new File(burpDir, "changeHeaders_prefs.db").getAbsolutePath();
+        burpExtenderCallbacks.saveExtensionSetting("changeHeadersDbPath", dbPath);
+        return dbPath;
     }
 
 }
