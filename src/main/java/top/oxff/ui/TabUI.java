@@ -12,8 +12,6 @@ import top.oxff.util.PopupMenuHeaderImporter;
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 

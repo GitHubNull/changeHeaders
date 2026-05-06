@@ -61,7 +61,7 @@ public class HeaderItemService {
         if (index < 0 || index >= headerItemList.size()) {
             return false; // 或者抛出异常
         }
-        HeaderItem item = headerItemList.remove(index);
+        headerItemList.remove(index);
         
         // 重新构建keyMap，因为删除后索引发生变化
         keyMap.clear();
@@ -74,9 +74,9 @@ public class HeaderItemService {
         return true;
     }
 
-    synchronized public static boolean deleteHeaderItemByIndexReturnItem(int index) {
+    synchronized public static HeaderItem deleteHeaderItemByIndexReturnItem(int index) {
         if (index < 0 || index >= headerItemList.size()) {
-            return false;
+            return null;
         }
         HeaderItem item = headerItemList.remove(index);
         
@@ -88,7 +88,7 @@ public class HeaderItemService {
             keyMap.put(currentItem.getKey(), i);
         }
         
-        return true;
+        return item;
     }
 
     synchronized public static boolean updateHeaderItem(HeaderItem oldHeaderItem, HeaderItem newHeaderItem) {

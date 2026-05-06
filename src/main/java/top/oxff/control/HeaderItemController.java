@@ -6,7 +6,6 @@ import top.oxff.service.HeaderItemService;
 import java.util.List;
 import java.util.Map;
 
-@SuppressWarnings("unused")
 public class HeaderItemController {
     public static void addHeaderItem(String key, String value, String description, boolean proxyEnable,
                                      boolean repeaterEnable, boolean intruderEnable, boolean scannerEnable,

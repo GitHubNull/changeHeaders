@@ -261,7 +261,6 @@ public class PreferenceService {
     /**
      * 从YAML字符串导入偏好数据，替换所有现有数据
      */
-    @SuppressWarnings("unchecked")
     synchronized public static boolean importPreferences(String yamlContent) {
         if (!initialized || yamlContent == null || yamlContent.trim().isEmpty()) return false;
 

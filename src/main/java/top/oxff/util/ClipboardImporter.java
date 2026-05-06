@@ -168,18 +168,10 @@ public class ClipboardImporter {
         }
         List<String> persistedKeys = PreferenceService.getPersistedHeaderKeys();
         List<String> builtinKeywords = PreferenceService.getBuiltinKeywords();
-        // 用空候选列表获取当前偏好数据，实际匹配在对话框显示时进行
-        return new HashSet<>(persistedKeys); // 返回持久化key集合用于后续匹配
-    }
-
-    /**
-     * 显示请求头选择对话框
-     * @param parentComponent 父级组件
-     * @param headerItems 解析出的请求头列表
-     * @param callback 回调函数，用于处理用户选择的请求头
-     */
-    private static void showHeaderSelectionDialog(Component parentComponent, List<HeaderItem> headerItems, Consumer<List<HeaderItem>> callback) {
-        showHeaderSelectionDialog(parentComponent, headerItems, callback, null);
+        // 合并持久化key和内置关键词，用于后续匹配
+        Set<String> result = new HashSet<>(persistedKeys);
+        result.addAll(builtinKeywords);
+        return result;
     }
 
     /**

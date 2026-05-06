@@ -10,7 +10,7 @@ public class HeaderItemTableModel extends AbstractTableModel {
     private final static String[] columnNames = new String[]{
             "Index", "Key", "Value", "Proxy", "Repeater", "Intruder", "Scanner", "Extender", "PopupMenuEnable", "Description", "Persistent"
     };
-    private final static Class[] columnClasses = new Class[]{
+    private final static Class<?>[] columnClasses = new Class<?>[]{
             Integer.class, String.class, String.class, Boolean.class, Boolean.class, Boolean.class, Boolean.class,
             Boolean.class, Boolean.class, String.class, Boolean.class
     };

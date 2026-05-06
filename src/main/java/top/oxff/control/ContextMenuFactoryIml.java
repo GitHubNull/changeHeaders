@@ -7,8 +7,6 @@ import top.oxff.service.PreferenceMatcher;
 import top.oxff.service.PreferenceService;
 import top.oxff.util.BytesTools;
 import top.oxff.util.ClipboardImporter;
-import top.oxff.util.LanguageManager;
-
 import javax.swing.*;
 import java.awt.*;
 import java.util.*;
