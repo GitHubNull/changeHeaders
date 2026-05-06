@@ -12,12 +12,14 @@ import top.oxff.ui.TabUI;
 import javax.swing.*;
 import java.awt.*;
 import java.io.File;
+import java.io.InputStream;
 import java.io.PrintWriter;
 import java.util.*;
 import java.util.List;
 
 public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListener {
-    final static String NAME = "changeHeaders_v2.0.0";
+    final static String VERSION = loadVersion();
+    final static String NAME = "changeHeaders_v" + VERSION;
 
     public static IBurpExtenderCallbacks burpExtenderCallbacks;
 
@@ -65,7 +67,7 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 
         // 输出作者版本等信息
         logInfo("Author: " + "oxff01");
-        logInfo("Version: " + "1.9.0");
+        logInfo("Version: " + VERSION);
         logInfo("Github: " + "https://github.com/oxff01/changeHeaders");
     }
 
@@ -136,6 +138,21 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
 
     public static void logError(String error) {
         stderr.println(error);
+    }
+
+    /**
+     * 从 version.properties 加载版本号（构建时由 Maven 资源过滤注入）
+     */
+    private static String loadVersion() {
+        try (InputStream is = BurpExtender.class.getResourceAsStream("/version.properties")) {
+            if (is != null) {
+                Properties props = new Properties();
+                props.load(is);
+                return props.getProperty("version", "unknown");
+            }
+        } catch (Exception ignored) {
+        }
+        return "unknown";
     }
 
     /**
