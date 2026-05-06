@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>changeHeaders 测试平台</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <header class="header">
+        <h1>changeHeaders 测试平台</h1>
+        <p>验证请求头是否被正确添加/修改</p>
+    </header>
+    
+    <div class="container">
+        <div class="main-grid">
+            <aside class="sidebar">
+                <!-- 说明 -->
+                <div class="card">
+                    <div class="card-header">使用说明</div>
+                    <div class="card-body">
+                        <div class="instructions">
+                            <h4>测试流程</h4>
+                            <ol>
+                                <li>直接点击按钮→看到失败提示</li>
+                                <li>复制需要的请求头规则</li>
+                                <li>在插件中配置规则</li>
+                                <li>通过代理访问→验证成功</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 认证测试 -->
+                <div class="card">
+                    <div class="card-header">🔐 认证测试</div>
+                    <div class="card-body">
+                        <div class="test-item">
+                            <button class="btn btn-primary" onclick="sendRequest('GET','/api/auth/bearer')">Bearer Token</button>
+                            <div class="hint"><strong>需要:</strong> Authorization: Bearer xxx<button class="copy-btn" onclick="copyText('Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.test')">复制</button></div>
+                        </div>
+                        <div class="test-item">
+                            <button class="btn btn-primary" onclick="sendRequest('GET','/api/auth/basic')">Basic 认证</button>
+                            <div class="hint"><strong>需要:</strong> Authorization: Basic YWRtaW46cGFzc3dvcmQxMjM=<button class="copy-btn" onclick="copyText('Authorization: Basic YWRtaW46cGFzc3dvcmQxMjM=')">复制</button></div>
+                        </div>
+                        <div class="test-item">
+                            <button class="btn btn-primary" onclick="sendRequest('GET','/api/auth/api-key')">API Key</button>
+                            <div class="hint"><strong>需要:</strong> X-API-Key: test-api-key-12345<button class="copy-btn" onclick="copyText('X-API-Key: test-api-key-12345')">复制</button></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Cookie测试 -->
+                <div class="card">
+                    <div class="card-header">🍪 Cookie测试</div>
+                    <div class="card-body">
+                        <div class="test-item">
+                            <button class="btn btn-success" onclick="sendRequest('GET','/api/session/required')">Session验证</button>
+                            <div class="hint"><strong>需要:</strong> Cookie: session=abc123xyz789<button class="copy-btn" onclick="copyText('Cookie: session=abc123xyz789')">复制</button></div>
+                        </div>
+                        <div class="test-item">
+                            <button class="btn btn-success" onclick="sendRequest('GET','/api/session/multi-cookie')">多Cookie</button>
+                            <div class="hint"><strong>需要:</strong> Cookie: token=secret123; user_id=1001; role=admin<button class="copy-btn" onclick="copyText('Cookie: token=secret123; user_id=1001; role=admin')">复制</button></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- IP测试 -->
+                <div class="card">
+                    <div class="card-header">🌐 IP伪造测试</div>
+                    <div class="card-body">
+                        <div class="test-item">
+                            <button class="btn btn-warning" onclick="sendRequest('GET','/api/ip/internal-only')">内网IP限制</button>
+                            <div class="hint"><strong>需要:</strong> X-Forwarded-For: 192.168.1.100<button class="copy-btn" onclick="copyText('X-Forwarded-For: 192.168.1.100')">复制</button></div>
+                        </div>
+                        <div class="test-item">
+                            <button class="btn btn-warning" onclick="sendRequest('GET','/api/ip/whitelist')">IP白名单</button>
+                            <div class="hint"><strong>需要:</strong> X-Real-IP: 8.8.8.8<button class="copy-btn" onclick="copyText('X-Real-IP: 8.8.8.8')">复制</button></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- UA测试 -->
+                <div class="card">
+                    <div class="card-header">📱 UA测试</div>
+                    <div class="card-body">
+                        <div class="test-item">
+                            <button class="btn btn-secondary" onclick="sendRequest('GET','/api/ua/mobile-only')">移动端限制</button>
+                            <div class="hint"><strong>需要:</strong> User-Agent含iPhone/Android<button class="copy-btn" onclick="copyText('User-Agent: Mozilla/5.0 (iPhone; CPU iPhone OS 14_0 like Mac OS X)')">复制</button></div>
+                        </div>
+                        <div class="test-item">
+                            <button class="btn btn-secondary" onclick="sendRequest('GET','/api/ua/bot-only')">爬虫验证</button>
+                            <div class="hint"><strong>需要:</strong> User-Agent含bot/spider<button class="copy-btn" onclick="copyText('User-Agent: Googlebot/2.1')">复制</button></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 自定义头测试 -->
+                <div class="card">
+                    <div class="card-header">⚙️ 自定义头测试</div>
+                    <div class="card-body">
+                        <div class="test-item">
+                            <button class="btn btn-secondary" onclick="sendRequest('GET','/api/headers/custom')">多自定义头</button>
+                            <div class="hint"><strong>需要:</strong> X-Custom-Auth + X-Request-ID + X-Timestamp<button class="copy-btn" onclick="copyText('X-Custom-Auth: my-auth\nX-Request-ID: req-12345\nX-Timestamp: 1704067200')">复制</button></div>
+                        </div>
+                        <div class="test-item">
+                            <button class="btn btn-secondary" onclick="sendRequest('GET','/api/headers/referer')">Referer验证</button>
+                            <div class="hint"><strong>需要:</strong> Referer含trusted-site.com<button class="copy-btn" onclick="copyText('Referer: https://trusted-site.com/page')">复制</button></div>
+                        </div>
+                        <div class="test-item">
+                            <button class="btn btn-secondary" onclick="sendRequest('GET','/api/headers/origin')">Origin验证</button>
+                            <div class="hint"><strong>需要:</strong> Origin: https://allowed-origin.com<button class="copy-btn" onclick="copyText('Origin: https://allowed-origin.com')">复制</button></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 综合测试 -->
+                <div class="card">
+                    <div class="card-header">🏆 综合测试</div>
+                    <div class="card-body">
+                        <div class="test-item">
+                            <button class="btn btn-danger" onclick="sendRequest('GET','/api/auth/full')">综合认证(3条件)</button>
+                            <div class="hint"><strong>需要:</strong> Bearer + Session + API-Key<button class="copy-btn" onclick="copyText('Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.test\nCookie: session=abc123xyz789\nX-API-Key: test-api-key-12345')">复制</button></div>
+                        </div>
+                        <div class="test-item">
+                            <button class="btn btn-danger" onclick="sendRequest('GET','/api/admin/panel')">管理员面板(最难)</button>
+                            <div class="hint"><strong>需要:</strong> Basic + AdminToken + 内网IP<button class="copy-btn" onclick="copyText('Authorization: Basic YWRtaW46cGFzc3dvcmQxMjM=\nX-Admin-Token: super-secret-admin\nX-Forwarded-For: 192.168.1.1')">复制</button></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Echo -->
+                <div class="card">
+                    <div class="card-header">📋 Echo</div>
+                    <div class="card-body">
+                        <button class="btn btn-primary" onclick="sendRequest('GET','/api/echo')">查看所有请求头</button>
+                    </div>
+                </div>
+            </aside>
+            
+            <main class="card response-panel">
+                <div class="response-tabs">
+                    <button class="tab-btn active" onclick="switchTab('json')">JSON</button>
+                    <button class="tab-btn" onclick="switchTab('headers')">请求头</button>
+                </div>
+                <div class="response-content">
+                    <pre id="json-view" class="response-json active">{
+  "message": "选择左侧测试开始",
+  "flow": ["1.点击按钮→失败", "2.复制规则", "3.配置插件", "4.代理访问→成功"]
+}</pre>
+                    <div id="headers-view" class="response-headers">
+                        <table class="headers-table">
+                            <thead><tr><th>Header</th><th>Value</th></tr></thead>
+                            <tbody id="headers-tbody"><tr><td colspan="2" style="text-align:center;color:#718096">发送请求后显示</td></tr></tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="status-bar">
+                    <div class="status-indicator"><span id="status-dot" class="status-dot"></span><span id="status-text">就绪</span></div>
+                    <div id="request-info">等待请求...</div>
+                </div>
+            </main>
+        </div>
+    </div>
+    
+    <div id="toast" class="toast"></div>
+    <script src="/static/js/app.js"></script>
+    <script>function copyText(t){copyToClipboard(t)}</script>
+</body>
+</html>

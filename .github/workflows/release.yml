@@ -31,6 +31,15 @@ jobs:
         run: |
           ls -la ./target/
 
+      - name: Package Test Server
+        run: |
+          cd onlineStore
+          # 移除不需要的缓存文件
+          rm -rf __pycache__ handlers/__pycache__ logs/
+          cd ..
+          # 打包测试服务
+          zip -r test-server.zip onlineStore/ -x "*.pyc" -x "*__pycache__*" -x "*/logs/*"
+
       - name: Extract version from tag
         id: extract_version
         run: |
@@ -47,14 +56,18 @@ jobs:
           echo "" >> $GITHUB_OUTPUT
           echo "一个功能强大的Burp Suite扩展插件，允许安全专业人员和开发人员轻松修改HTTP请求头。" >> $GITHUB_OUTPUT
           echo "" >> $GITHUB_OUTPUT
+          echo "### 发布内容" >> $GITHUB_OUTPUT
+          echo "- **changeHeaders-${{ steps.extract_version.outputs.VERSION }}.jar** - Burp Suite插件主程序" >> $GITHUB_OUTPUT
+          echo "- **test-server-${{ steps.extract_version.outputs.VERSION }}.zip** - 插件功能测试HTTP服务" >> $GITHUB_OUTPUT
+          echo "" >> $GITHUB_OUTPUT
           echo "### 主要特性" >> $GITHUB_OUTPUT
           echo "- 强大的请求头管理（添加/修改/删除请求头）" >> $GITHUB_OUTPUT
-          echo "- 与所有主要Burp Suite工具无缝协作（Proxy、Repeater、Intruder、Scanner、Extender）" >> $GITHUB_OUTPUT
+          echo "- 与所有主要Burp Suite工具无缝协作" >> $GITHUB_OUTPUT
           echo "- 智能配置管理，自动保存并在会话间持久化" >> $GITHUB_OUTPUT
           echo "- 支持导入/导出配置（JSON格式）" >> $GITHUB_OUTPUT
           echo "- 多语言支持（中文和英文）" >> $GITHUB_OUTPUT
           echo "- 右键菜单集成，支持主动请求头替换" >> $GITHUB_OUTPUT
-          echo "- 两种操作模式（自动模式和手动模式）" >> $GITHUB_OUTPUT
+          echo "- 内置测试HTTP服务，方便验证插件功能" >> $GITHUB_OUTPUT
           echo "" >> $GITHUB_OUTPUT
           echo "有关更多详细信息，请参阅 [README.md](https://github.com/${{ github.repository }}/blob/main/README.md)" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
@@ -80,3 +93,13 @@ jobs:
           asset_path: ./target/changeHeaders-${{ steps.extract_version.outputs.VERSION }}.jar
           asset_name: changeHeaders-${{ steps.extract_version.outputs.VERSION }}.jar
           asset_content_type: application/java-archive
+
+      - name: Upload Test Server
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./test-server.zip
+          asset_name: test-server-${{ steps.extract_version.outputs.VERSION }}.zip
+          asset_content_type: application/zip

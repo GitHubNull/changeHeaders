@@ -38,3 +38,16 @@ build/
 
 ### Mac OS ###
 .DS_Store
+
+### Python ###
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.so
+
+### Logs ###
+*.log
+logs/
+onlineStore/logs/
