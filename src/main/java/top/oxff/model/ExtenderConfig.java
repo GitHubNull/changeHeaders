@@ -8,7 +8,7 @@ import java.util.Set;
 
 @Data
 public class ExtenderConfig {
-    private Set<Integer> ToolFlags;
+    private Set<Integer> toolFlags;
     private boolean proxyEnable;
     private boolean repeaterEnable;
     private boolean intruderEnable;

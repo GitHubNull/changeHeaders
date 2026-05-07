@@ -1,6 +1,12 @@
 package burp;
 
-import com.alibaba.fastjson2.JSON;
+import org.yaml.snakeyaml.DumperOptions;
+import org.yaml.snakeyaml.LoaderOptions;
+import org.yaml.snakeyaml.TypeDescription;
+import org.yaml.snakeyaml.Yaml;
+import org.yaml.snakeyaml.constructor.Constructor;
+import org.yaml.snakeyaml.nodes.Tag;
+import org.yaml.snakeyaml.representer.Representer;
 import top.oxff.control.ContextMenuFactoryIml;
 import top.oxff.control.HttpProcess;
 import top.oxff.model.ExtenderConfig;
@@ -88,18 +94,36 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
             extenderConfig.setHeaderItemList(persistentItems);
         }
         
-        String jsonString = JSON.toJSONString(extenderConfig);
-        burpExtenderCallbacks.saveExtensionSetting(ExtenderConfig_NAME, jsonString);
+        DumperOptions options = new DumperOptions();
+        options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
+        options.setPrettyFlow(true);
+
+        Representer representer = new Representer(options);
+        representer.addClassTag(ExtenderConfig.class, Tag.MAP);
+        representer.addClassTag(HeaderItem.class, Tag.MAP);
+
+        Yaml yaml = new Yaml(representer);
+        String yamlString = yaml.dump(extenderConfig);
+        burpExtenderCallbacks.saveExtensionSetting(ExtenderConfig_NAME, yamlString);
     }
 
 
     private void loadExConfig() {
-        String jsonString = burpExtenderCallbacks.loadExtensionSetting(ExtenderConfig_NAME);
-        if (null == jsonString || jsonString.isEmpty() || jsonString.trim().isEmpty()){
+        String yamlString = burpExtenderCallbacks.loadExtensionSetting(ExtenderConfig_NAME);
+        if (null == yamlString || yamlString.isEmpty() || yamlString.trim().isEmpty()){
             return;
         }
         try {
-            ExtenderConfig config = JSON.parseObject(jsonString, ExtenderConfig.class);
+            LoaderOptions loaderOptions = new LoaderOptions();
+            Constructor constructor = new Constructor(ExtenderConfig.class, loaderOptions);
+
+            TypeDescription configDesc = new TypeDescription(ExtenderConfig.class);
+            configDesc.addPropertyParameters("headerItemList", HeaderItem.class);
+            constructor.addTypeDescription(configDesc);
+
+            Yaml yaml = new Yaml(constructor);
+            ExtenderConfig config = yaml.load(yamlString);
+
             tabUI.setCheckBoxStatus(config);
             if (null != config.getKeyMap() && !config.getKeyMap().isEmpty()) {
                 tableModel.setKeyMap(config.getKeyMap());
@@ -111,7 +135,7 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
                 TOOL_FLAGS.addAll(config.getToolFlags());
             }
         }catch (Exception e){
-            stdout.println("parse json object error: " + e.getMessage());
+            stdout.println("parse yaml object error: " + e.getMessage());
         }
     }
 

@@ -6,7 +6,7 @@
 
     <groupId>top.oxff</groupId>
     <artifactId>changeHeaders</artifactId>
-    <version>2.5.0</version>
+    <version>3.0.0</version>
 
     <repositories>
         <repository>
@@ -80,14 +80,7 @@
             <scope>provided</scope>
         </dependency>
 
-        <!-- https://mvnrepository.com/artifact/com.alibaba.fastjson2/fastjson2 -->
-        <dependency>
-            <groupId>com.alibaba.fastjson2</groupId>
-            <artifactId>fastjson2</artifactId>
-            <version>2.0.53</version>
-        </dependency>
-
-        <!-- SQLite JDBC driver for preference persistence -->
+<!-- SQLite JDBC driver for preference persistence -->
         <dependency>
             <groupId>org.xerial</groupId>
             <artifactId>sqlite-jdbc</artifactId>

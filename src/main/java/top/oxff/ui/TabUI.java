@@ -2,6 +2,13 @@ package top.oxff.ui;
 
 import burp.BurpExtender;
 import burp.IBurpExtenderCallbacks;
+import org.yaml.snakeyaml.DumperOptions;
+import org.yaml.snakeyaml.LoaderOptions;
+import org.yaml.snakeyaml.TypeDescription;
+import org.yaml.snakeyaml.Yaml;
+import org.yaml.snakeyaml.constructor.Constructor;
+import org.yaml.snakeyaml.nodes.Tag;
+import org.yaml.snakeyaml.representer.Representer;
 import top.oxff.control.HeaderItemController;
 import top.oxff.model.ExtenderConfig;
 import top.oxff.model.HeaderItem;
@@ -334,14 +341,14 @@ public class TabUI extends JPanel {
     }
     
     /**
-     * 导出配置到JSON文件
+     * 导出配置到YAML文件
      */
     private void exportConfig() {
         JFileChooser fileChooser = new JFileChooser();
         fileChooser.setDialogTitle(LanguageManager.getString("dialog.export.title"));
-        fileChooser.setSelectedFile(new File("changeHeaders_config.json"));
+        fileChooser.setSelectedFile(new File("changeHeaders_config.yaml"));
         FileNameExtensionFilter filter = new FileNameExtensionFilter(
-            LanguageManager.getString("dialog.filechooser.filter"), "json");
+            LanguageManager.getString("dialog.filechooser.filter"), "yaml", "yml");
         fileChooser.setFileFilter(filter);
         
         int userSelection = fileChooser.showSaveDialog(this);
@@ -358,9 +365,9 @@ public class TabUI extends JPanel {
                 return;
             }
             
-            // 确保文件有.json扩展名
-            if (!fileToSave.getAbsolutePath().endsWith(".json")) {
-                fileToSave = new File(fileToSave + ".json");
+            // 确保文件有.yaml扩展名
+            if (!fileToSave.getAbsolutePath().endsWith(".yaml") && !fileToSave.getAbsolutePath().endsWith(".yml")) {
+                fileToSave = new File(fileToSave + ".yaml");
             }
             
             // 检查文件是否可写
@@ -384,11 +391,20 @@ public class TabUI extends JPanel {
                     return;
                 }
                 
-                // 序列化为JSON字符串
-                String jsonString = com.alibaba.fastjson2.JSON.toJSONString(config);
+                // 序列化为YAML字符串
+                DumperOptions options = new DumperOptions();
+                options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
+                options.setPrettyFlow(true);
+
+                Representer representer = new Representer(options);
+                representer.addClassTag(ExtenderConfig.class, Tag.MAP);
+                representer.addClassTag(HeaderItem.class, Tag.MAP);
+
+                Yaml yaml = new Yaml(representer);
+                String yamlString = yaml.dump(config);
                 
-                // 检查JSON字符串是否为空
-                if (jsonString == null || jsonString.isEmpty()) {
+                // 检查YAML字符串是否为空
+                if (yamlString == null || yamlString.isEmpty()) {
                     JOptionPane.showMessageDialog(this, 
                         LanguageManager.getString("error.config.serialize"), 
                         LanguageManager.getString("dialog.error.export.title"), 
@@ -398,7 +414,7 @@ public class TabUI extends JPanel {
                 
                 // 使用OutputStreamWriter以UTF-8编码写入文件
                 try (OutputStreamWriter writer = new OutputStreamWriter(new FileOutputStream(fileToSave), StandardCharsets.UTF_8)) {
-                    writer.write(jsonString);
+                    writer.write(yamlString);
                 }
                 
                 JOptionPane.showMessageDialog(this, 
@@ -429,13 +445,13 @@ public class TabUI extends JPanel {
     }
     
     /**
-     * 从JSON文件导入配置
+     * 从YAML文件导入配置
      */
     private void importConfig() {
         JFileChooser fileChooser = new JFileChooser();
         fileChooser.setDialogTitle(LanguageManager.getString("dialog.import.title"));
         FileNameExtensionFilter filter = new FileNameExtensionFilter(
-            LanguageManager.getString("dialog.filechooser.filter"), "json");
+            LanguageManager.getString("dialog.filechooser.filter"), "yaml", "yml");
         fileChooser.setFileFilter(filter);
         
         int userSelection = fileChooser.showOpenDialog(this);
@@ -462,7 +478,7 @@ public class TabUI extends JPanel {
             }
             
             // 检查文件扩展名
-            if (!selectedFile.getName().toLowerCase().endsWith(".json")) {
+            if (!selectedFile.getName().toLowerCase().endsWith(".yaml") && !selectedFile.getName().toLowerCase().endsWith(".yml")) {
                 int option = JOptionPane.showConfirmDialog(this,
                         LanguageManager.getString("warning.file.format.message"),
                         LanguageManager.getString("warning.file.format.title"),
@@ -485,17 +501,17 @@ public class TabUI extends JPanel {
             
             try {
                 // 使用InputStreamReader以UTF-8编码读取文件
-                StringBuilder jsonString = new StringBuilder();
+                StringBuilder yamlString = new StringBuilder();
                 char[] buffer = new char[1024];
                 int length;
                 try (InputStreamReader reader = new InputStreamReader(new FileInputStream(selectedFile), StandardCharsets.UTF_8)) {
                     while ((length = reader.read(buffer)) != -1) {
-                        jsonString.append(buffer, 0, length);
+                        yamlString.append(buffer, 0, length);
                     }
                 }
                 
                 // 检查读取的内容是否为空
-                if (jsonString.toString().trim().isEmpty()) {
+                if (yamlString.toString().trim().isEmpty()) {
                     JOptionPane.showMessageDialog(this, 
                         LanguageManager.getString("error.file.emptyContent"), 
                         LanguageManager.getString("dialog.error.import.title"), 
@@ -503,8 +519,16 @@ public class TabUI extends JPanel {
                     return;
                 }
                 
-                // 解析JSON
-                ExtenderConfig config = com.alibaba.fastjson2.JSON.parseObject(jsonString.toString(), ExtenderConfig.class);
+                // 解析YAML
+                LoaderOptions loaderOptions = new LoaderOptions();
+                Constructor constructor = new Constructor(ExtenderConfig.class, loaderOptions);
+
+                TypeDescription configDesc = new TypeDescription(ExtenderConfig.class);
+                configDesc.addPropertyParameters("headerItemList", HeaderItem.class);
+                constructor.addTypeDescription(configDesc);
+
+                Yaml yaml = new Yaml(constructor);
+                ExtenderConfig config = yaml.load(yamlString.toString());
                 
                 // 检查解析结果
                 if (config == null) {
