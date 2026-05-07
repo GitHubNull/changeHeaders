@@ -17,10 +17,18 @@ import top.oxff.util.ClipboardImporter;
 import top.oxff.util.PopupMenuHeaderImporter;
 
 import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
+import javax.swing.table.TableRowSorter;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 import static burp.BurpExtender.TOOL_FLAGS;
 import static burp.BurpExtender.tableModel;
@@ -47,6 +55,7 @@ public class TabUI extends JPanel {
     JPanel optPanel1;
 
     JButton addBtn;
+    JButton editBtn;
     JButton delBtn;
 
     JPanel optPanel2;
@@ -75,6 +84,18 @@ public class TabUI extends JPanel {
 
     // 请求头管理面板（包含north+center+south）
     JPanel headerManagementPanel;
+
+    // 搜索相关组件
+    JPanel searchPanel;
+    JTextField searchField;
+    JButton clearSearchBtn;
+    JButton advancedToggleBtn;
+    JPanel advancedPanel;
+    JComboBox<String> columnCombo;
+    JCheckBox caseSensitiveCheckbox;
+    JCheckBox regexCheckbox;
+    TableRowSorter<top.oxff.model.HeaderItemTableModel> sorter;
+    HeaderRowFilter rowFilter;
 
     public TabUI() {
         setLayout(new BorderLayout());
@@ -159,12 +180,116 @@ public class TabUI extends JPanel {
             }
         });
 
-        headerManagementPanel.add(northPanel, BorderLayout.NORTH);
+        // 搜索面板区域：将northPanel和searchPanel组合到topPanel中
+        JPanel topPanel = new JPanel(new BorderLayout());
+        topPanel.add(northPanel, BorderLayout.NORTH);
 
+        // 搜索面板
+        searchPanel = new JPanel(new BorderLayout());
+        JPanel simpleSearchPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        simpleSearchPanel.add(new JLabel(LanguageManager.getString("search.label")));
+        searchField = new JTextField(20);
+        simpleSearchPanel.add(searchField);
+        clearSearchBtn = new JButton(LanguageManager.getString("search.clear"));
+        simpleSearchPanel.add(clearSearchBtn);
+        advancedToggleBtn = new JButton(LanguageManager.getString("search.advanced.show"));
+        simpleSearchPanel.add(advancedToggleBtn);
+        searchPanel.add(simpleSearchPanel, BorderLayout.NORTH);
+
+        // 高级搜索面板（默认收缩）
+        advancedPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        columnCombo = new JComboBox<>(new String[]{
+            LanguageManager.getString("search.column.all"),
+            LanguageManager.getString("search.column.key"),
+            LanguageManager.getString("search.column.value"),
+            LanguageManager.getString("search.column.description")
+        });
+        advancedPanel.add(columnCombo);
+        caseSensitiveCheckbox = new JCheckBox(LanguageManager.getString("search.caseSensitive"));
+        advancedPanel.add(caseSensitiveCheckbox);
+        regexCheckbox = new JCheckBox(LanguageManager.getString("search.regex"));
+        advancedPanel.add(regexCheckbox);
+        advancedPanel.setVisible(false);
+        searchPanel.add(advancedPanel, BorderLayout.CENTER);
+
+        topPanel.add(searchPanel, BorderLayout.CENTER);
+        headerManagementPanel.add(topPanel, BorderLayout.NORTH);
 
         table = new JTable();
 
         table.setModel(tableModel);
+
+        // 设置 TableRowSorter 用于搜索过滤
+        sorter = new TableRowSorter<>(tableModel);
+        table.setRowSorter(sorter);
+        rowFilter = new HeaderRowFilter();
+        sorter.setRowFilter(rowFilter);
+
+        // 搜索框文档监听
+        searchField.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) { updateFilter(); }
+            @Override
+            public void removeUpdate(DocumentEvent e) { updateFilter(); }
+            @Override
+            public void changedUpdate(DocumentEvent e) { updateFilter(); }
+            private void updateFilter() {
+                rowFilter.setSearchText(searchField.getText());
+                sorter.allRowsChanged();
+            }
+        });
+
+        // 清除搜索按钮
+        clearSearchBtn.addActionListener(e -> searchField.setText(""));
+
+        // 高级搜索展开/收缩
+        advancedToggleBtn.addActionListener(e -> {
+            boolean visible = !advancedPanel.isVisible();
+            advancedPanel.setVisible(visible);
+            advancedToggleBtn.setText(visible ?
+                LanguageManager.getString("search.advanced.hide") :
+                LanguageManager.getString("search.advanced.show"));
+            searchPanel.revalidate();
+            searchPanel.repaint();
+        });
+
+        // 高级搜索选项监听
+        columnCombo.addActionListener(e -> {
+            rowFilter.setSearchColumn(columnCombo.getSelectedIndex());
+            sorter.allRowsChanged();
+        });
+        caseSensitiveCheckbox.addActionListener(e -> {
+            rowFilter.setCaseSensitive(caseSensitiveCheckbox.isSelected());
+            sorter.allRowsChanged();
+        });
+        regexCheckbox.addActionListener(e -> {
+            rowFilter.setRegexMode(regexCheckbox.isSelected());
+            sorter.allRowsChanged();
+        });
+
+        // 双击文本列触发编辑弹窗
+        table.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (e.getClickCount() == 2) {
+                    int viewRow = table.rowAtPoint(e.getPoint());
+                    int viewCol = table.columnAtPoint(e.getPoint());
+                    if (viewRow < 0 || viewCol < 0) return;
+                    // 仅在非boolean列（Key, Value, Description, Persistent）双击时打开编辑弹窗
+                    int modelCol = table.convertColumnIndexToModel(viewCol);
+                    if (modelCol == 1 || modelCol == 2 || modelCol == 9 || modelCol == 10) {
+                        int modelRow = table.convertRowIndexToModel(viewRow);
+                        HeaderItem existingItem = HeaderItemController.getHeaderItemByIndex(modelRow);
+                        if (existingItem == null) return;
+                        HeaderItem updatedItem = HeaderItemDialog.showEditDialog(TabUI.this, existingItem);
+                        if (updatedItem != null) {
+                            updatedItem.setId(existingItem.getId());
+                            tableModel.updateRow(modelRow, updatedItem);
+                        }
+                    }
+                }
+            }
+        });
 
         centerPanel = new JScrollPane(table, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 
@@ -175,26 +300,49 @@ public class TabUI extends JPanel {
         optPanel1 = new JPanel(new FlowLayout(FlowLayout.CENTER));
 
         addBtn = new JButton(LanguageManager.getString("button.add"));
+        editBtn = new JButton(LanguageManager.getString("button.edit"));
         delBtn = new JButton(LanguageManager.getString("button.delete"));
 
         addBtn.addActionListener(e -> {
-            String[] item = new String[]{
-                LanguageManager.getString("button.add"),
-                LanguageManager.getString("button.add"),
-                LanguageManager.getString("button.add"),
-                "是/否", "是/否","是/否","是/否","是/否","是/否"
-            };
-            tableModel.addRow(item);
+            HeaderItem item = HeaderItemDialog.showAddDialog(this);
+            if (item != null) {
+                tableModel.addRow(item);
+            }
+        });
+
+        editBtn.addActionListener(e -> {
+            int selectedRow = table.getSelectedRow();
+            if (selectedRow < 0) {
+                JOptionPane.showMessageDialog(this,
+                    LanguageManager.getString("warning.headerKey.selectRow"),
+                    LanguageManager.getString("dialog.headerEdit.title"),
+                    JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+            int modelRow = table.convertRowIndexToModel(selectedRow);
+            HeaderItem existingItem = HeaderItemController.getHeaderItemByIndex(modelRow);
+            if (existingItem == null) return;
+            HeaderItem updatedItem = HeaderItemDialog.showEditDialog(this, existingItem);
+            if (updatedItem != null) {
+                updatedItem.setId(existingItem.getId());
+                tableModel.updateRow(modelRow, updatedItem);
+            }
         });
 
         delBtn.addActionListener(e -> {
-            int[] selectedRows = table.getSelectedRows();
-            if (null == selectedRows) {
+            int[] selectedViewRows = table.getSelectedRows();
+            if (null == selectedViewRows || selectedViewRows.length == 0) {
                 return;
             }
-
-            for (int selectedRow : selectedRows) {
-                tableModel.removeRow(selectedRow);
+            // 视图索引转换为模型索引
+            int[] modelRows = new int[selectedViewRows.length];
+            for (int i = 0; i < selectedViewRows.length; i++) {
+                modelRows[i] = table.convertRowIndexToModel(selectedViewRows[i]);
+            }
+            // 按降序排列，避免删除时索引偏移
+            Arrays.sort(modelRows);
+            for (int i = modelRows.length - 1; i >= 0; i--) {
+                tableModel.removeRow(modelRows[i]);
             }
         });
         
@@ -228,6 +376,7 @@ public class TabUI extends JPanel {
         });
 
         optPanel1.add(addBtn);
+        optPanel1.add(editBtn);
         optPanel1.add(delBtn);
         optPanel1.add(exportConfigBtn);
         optPanel1.add(importConfigBtn);
@@ -325,12 +474,26 @@ public class TabUI extends JPanel {
         extenderCheckbox.setText(LanguageManager.getString("checkbox.extender"));
         popupMenuCheckbox.setText(LanguageManager.getString("checkbox.popupMenu"));
         addBtn.setText(LanguageManager.getString("button.add"));
+        editBtn.setText(LanguageManager.getString("button.edit"));
         delBtn.setText(LanguageManager.getString("button.delete"));
         clearAllConfigBtn.setText(LanguageManager.getString("button.clearAllConfig"));
         exportConfigBtn.setText(LanguageManager.getString("button.exportConfig"));
         importConfigBtn.setText(LanguageManager.getString("button.importConfig"));
         importFromClipboardBtn.setText(LanguageManager.getString("button.importFromClipboard"));
         importPopupMenuHeadersBtn.setText(LanguageManager.getString("button.importPopupMenuHeaders"));
+
+        // 更新搜索面板文本
+        clearSearchBtn.setText(LanguageManager.getString("search.clear"));
+        advancedToggleBtn.setText(advancedPanel.isVisible() ?
+            LanguageManager.getString("search.advanced.hide") :
+            LanguageManager.getString("search.advanced.show"));
+        columnCombo.removeAllItems();
+        columnCombo.addItem(LanguageManager.getString("search.column.all"));
+        columnCombo.addItem(LanguageManager.getString("search.column.key"));
+        columnCombo.addItem(LanguageManager.getString("search.column.value"));
+        columnCombo.addItem(LanguageManager.getString("search.column.description"));
+        caseSensitiveCheckbox.setText(LanguageManager.getString("search.caseSensitive"));
+        regexCheckbox.setText(LanguageManager.getString("search.regex"));
 
         // 更新Tab标题
         mainTabbedPane.setTitleAt(0, LanguageManager.getString("tab.headerManagement"));
@@ -417,10 +580,12 @@ public class TabUI extends JPanel {
                     writer.write(yamlString);
                 }
                 
-                JOptionPane.showMessageDialog(this, 
-                    "<html>" + LanguageManager.getString("dialog.success.export.message") + 
-                    "<br>" + LanguageManager.getString("info.export.path", fileToSave.getAbsolutePath()) + "</html>", 
-                    LanguageManager.getString("dialog.success.export.title"), 
+                JLabel exportSuccessLabel = new JLabel(
+                    "<html>" + LanguageManager.getString("dialog.success.export.message") +
+                    "<br>" + LanguageManager.getString("info.export.path", fileToSave.getAbsolutePath()) + "</html>");
+                JOptionPane.showMessageDialog(this,
+                    exportSuccessLabel,
+                    LanguageManager.getString("dialog.success.export.title"),
                     JOptionPane.INFORMATION_MESSAGE);
             } catch (SecurityException ex) {
                 JOptionPane.showMessageDialog(this, 

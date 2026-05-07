@@ -79,8 +79,11 @@ public class PreferencePanel extends JPanel {
                     writer.write(yamlContent);
                 }
 
+                JLabel exportPrefSuccessLabel = new JLabel(
+                        "<html>" + LanguageManager.getString("dialog.success.exportPref.message") +
+                        "<br>" + LanguageManager.getString("info.export.path", fileToSave.getAbsolutePath()) + "</html>");
                 JOptionPane.showMessageDialog(this,
-                        LanguageManager.getString("dialog.success.exportPref.message"),
+                        exportPrefSuccessLabel,
                         LanguageManager.getString("dialog.success.exportPref.title"),
                         JOptionPane.INFORMATION_MESSAGE);
             } catch (IOException ex) {

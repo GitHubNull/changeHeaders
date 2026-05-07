@@ -55,7 +55,8 @@ public class HeaderItemTableModel extends AbstractTableModel {
     }
 
     public boolean isCellEditable(int row, int column) {
-        return column != 0;
+        // 仅布尔列（3-8）允许内联编辑，其他列通过弹窗编辑
+        return column >= 3 && column <= 8;
     }
 
     public void addRow(String[] item) {
