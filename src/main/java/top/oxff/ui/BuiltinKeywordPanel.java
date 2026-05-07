@@ -54,6 +54,9 @@ public class BuiltinKeywordPanel extends JPanel {
         buttonPanel.add(editBtn);
         buttonPanel.add(resetBtn);
         add(buttonPanel, BorderLayout.SOUTH);
+
+        // 注册偏好数据变更监听器，自动刷新表格
+        PreferenceService.addChangeListener(tableModel::refreshData);
     }
 
     private void onAdd(ActionEvent e) {

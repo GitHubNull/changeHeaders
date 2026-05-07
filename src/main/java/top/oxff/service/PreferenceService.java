@@ -5,6 +5,7 @@ import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
 import top.oxff.model.PreferenceConfig;
 
+import javax.swing.*;
 import java.sql.*;
 import java.util.*;
 
@@ -18,6 +19,27 @@ public class PreferenceService {
     private static volatile boolean initialized = false;
 
     private static final String[] DEFAULT_KEYWORDS = {"cookie", "token", "authorization", "auth", "jwt", "session"};
+
+    /** 数据变更监听器列表 */
+    private static final List<Runnable> changeListeners = new ArrayList<>();
+
+    /**
+     * 注册数据变更监听器，当偏好数据发生变化时回调
+     */
+    public static void addChangeListener(Runnable listener) {
+        if (listener != null && !changeListeners.contains(listener)) {
+            changeListeners.add(listener);
+        }
+    }
+
+    /**
+     * 通知所有监听器数据已变更（在EDT上执行）
+     */
+    private static void notifyChangeListeners() {
+        for (Runnable listener : changeListeners) {
+            SwingUtilities.invokeLater(listener);
+        }
+    }
 
     /**
      * 初始化数据库连接和表结构
@@ -125,7 +147,9 @@ public class PreferenceService {
                 "INSERT OR IGNORE INTO persisted_header_keys (header_key, created_at) VALUES (?, ?)")) {
             pstmt.setString(1, key.trim());
             pstmt.setLong(2, System.currentTimeMillis());
-            return pstmt.executeUpdate() > 0;
+            boolean result = pstmt.executeUpdate() > 0;
+            if (result) notifyChangeListeners();
+            return result;
         } catch (SQLException e) {
             BurpExtender.logError("Failed to add persisted header key: " + e.getMessage());
             return false;
@@ -138,7 +162,9 @@ public class PreferenceService {
         try (PreparedStatement pstmt = connection.prepareStatement(
                 "DELETE FROM persisted_header_keys WHERE header_key = ?")) {
             pstmt.setString(1, key.trim());
-            return pstmt.executeUpdate() > 0;
+            boolean result = pstmt.executeUpdate() > 0;
+            if (result) notifyChangeListeners();
+            return result;
         } catch (SQLException e) {
             BurpExtender.logError("Failed to remove persisted header key: " + e.getMessage());
             return false;
@@ -150,6 +176,7 @@ public class PreferenceService {
 
         try (Statement stmt = connection.createStatement()) {
             stmt.execute("DELETE FROM persisted_header_keys");
+            notifyChangeListeners();
             return true;
         } catch (SQLException e) {
             BurpExtender.logError("Failed to clear persisted header keys: " + e.getMessage());
@@ -181,7 +208,9 @@ public class PreferenceService {
                 "INSERT OR IGNORE INTO builtin_keywords (keyword, created_at) VALUES (?, ?)")) {
             pstmt.setString(1, keyword.trim().toLowerCase());
             pstmt.setLong(2, System.currentTimeMillis());
-            return pstmt.executeUpdate() > 0;
+            boolean result = pstmt.executeUpdate() > 0;
+            if (result) notifyChangeListeners();
+            return result;
         } catch (SQLException e) {
             BurpExtender.logError("Failed to add builtin keyword: " + e.getMessage());
             return false;
@@ -194,7 +223,9 @@ public class PreferenceService {
         try (PreparedStatement pstmt = connection.prepareStatement(
                 "DELETE FROM builtin_keywords WHERE keyword = ?")) {
             pstmt.setString(1, keyword.trim().toLowerCase());
-            return pstmt.executeUpdate() > 0;
+            boolean result = pstmt.executeUpdate() > 0;
+            if (result) notifyChangeListeners();
+            return result;
         } catch (SQLException e) {
             BurpExtender.logError("Failed to remove builtin keyword: " + e.getMessage());
             return false;
@@ -208,7 +239,9 @@ public class PreferenceService {
                 "UPDATE builtin_keywords SET keyword = ? WHERE keyword = ?")) {
             pstmt.setString(1, newKeyword.trim().toLowerCase());
             pstmt.setString(2, oldKeyword.trim().toLowerCase());
-            return pstmt.executeUpdate() > 0;
+            boolean result = pstmt.executeUpdate() > 0;
+            if (result) notifyChangeListeners();
+            return result;
         } catch (SQLException e) {
             BurpExtender.logError("Failed to update builtin keyword: " + e.getMessage());
             return false;
@@ -233,6 +266,7 @@ public class PreferenceService {
                 pstmt.setLong(2, now);
                 pstmt.executeUpdate();
             }
+            notifyChangeListeners();
             return true;
         } catch (SQLException e) {
             BurpExtender.logError("Failed to seed default keywords: " + e.getMessage());
@@ -325,6 +359,7 @@ public class PreferenceService {
                 }
             }
 
+            notifyChangeListeners();
             return true;
         } catch (Exception e) {
             BurpExtender.logError("Failed to import preferences: " + e.getMessage());

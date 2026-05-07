@@ -48,10 +48,9 @@ public class ClipboardImporter {
                 return;
             }
             
-            // 解析HTTP请求头（使用偏好匹配确定自动勾选）
-            Set<String> autoSelectedKeys = getAutoSelectedKeys();
-            List<HeaderItem> headerItems = parseHttpHeaders(clipboardText, autoSelectedKeys);
-            
+            // 解析HTTP请求头
+            List<HeaderItem> headerItems = parseHttpHeaders(clipboardText);
+
             if (headerItems.isEmpty()) {
                 JOptionPane.showMessageDialog(parentComponent,
                     LanguageManager.getString("error.clipboard.noHeaders"),
@@ -59,7 +58,26 @@ public class ClipboardImporter {
                     JOptionPane.WARNING_MESSAGE);
                 return;
             }
-            
+
+            // 使用PreferenceMatcher确定自动勾选的请求头（与ContextMenuFactoryIml逻辑一致）
+            List<String> candidateKeys = new ArrayList<>();
+            for (HeaderItem item : headerItems) {
+                candidateKeys.add(item.getKey());
+            }
+            Set<String> autoSelectedKeys;
+            if (PreferenceService.isInitialized()) {
+                List<String> persistedKeys = PreferenceService.getPersistedHeaderKeys();
+                List<String> builtinKeywords = PreferenceService.getBuiltinKeywords();
+                autoSelectedKeys = PreferenceMatcher.determineAutoSelectedKeys(candidateKeys, persistedKeys, builtinKeywords);
+            } else {
+                autoSelectedKeys = Collections.emptySet();
+            }
+
+            // 根据偏好匹配结果设置popupMenuEnable
+            for (HeaderItem item : headerItems) {
+                item.setPopupMenuEnable(autoSelectedKeys.contains(item.getKey()));
+            }
+
             // 显示选择对话框
             showHeaderSelectionDialog(parentComponent, headerItems, callback, autoSelectedKeys);
             
@@ -83,7 +101,7 @@ public class ClipboardImporter {
      * @param text HTTP请求头文本
      * @return 解析出的HeaderItem列表
      */
-    private static List<HeaderItem> parseHttpHeaders(String text, Set<String> autoSelectedKeys) {
+    private static List<HeaderItem> parseHttpHeaders(String text) {
         List<HeaderItem> headerItems = new ArrayList<>();
         
         // 按行分割文本
@@ -129,12 +147,8 @@ public class ClipboardImporter {
                         headerItem.setScannerEnable(true);
                         headerItem.setExtenderEnable(true);
                         
-                        // 对于偏好匹配的请求头，默认启用popupMenu
-                        if (isPreferenceMatchedHeader(key, autoSelectedKeys)) {
-                            headerItem.setPopupMenuEnable(true);
-                        } else {
-                            headerItem.setPopupMenuEnable(false);
-                        }
+                        // popupMenuEnable由外部根据偏好匹配结果设置
+                        headerItem.setPopupMenuEnable(false);
                         
                         // 通过剪贴板导入的请求头默认不持久化
                         headerItem.setPersistent(false);
@@ -149,30 +163,6 @@ public class ClipboardImporter {
         
         return headerItems;
     }
-    
-    /**
-     * 判断是否为常见的重要请求头（基于偏好匹配）
-     * @param key 请求头键名
-     * @return 是否为偏好匹配的请求头
-     */
-    private static boolean isPreferenceMatchedHeader(String key, Set<String> autoSelectedKeys) {
-        return autoSelectedKeys.contains(key);
-    }
-    
-    /**
-     * 获取自动勾选的请求头键名集合
-     */
-    private static Set<String> getAutoSelectedKeys() {
-        if (!PreferenceService.isInitialized()) {
-            return Collections.emptySet();
-        }
-        List<String> persistedKeys = PreferenceService.getPersistedHeaderKeys();
-        List<String> builtinKeywords = PreferenceService.getBuiltinKeywords();
-        // 合并持久化key和内置关键词，用于后续匹配
-        Set<String> result = new HashSet<>(persistedKeys);
-        result.addAll(builtinKeywords);
-        return result;
-    }
 
     /**
      * 显示请求头选择对话框
@@ -182,8 +172,9 @@ public class ClipboardImporter {
      * @param autoSelectedKeys 自动勾选的键名集合，如果为null则使用偏好匹配计算
      */
     public static void showHeaderSelectionDialog(Component parentComponent, List<HeaderItem> headerItems, Consumer<List<HeaderItem>> callback, Set<String> autoSelectedKeys) {
-        // 创建对话框
-        JDialog dialog = new JDialog(SwingUtilities.getWindowAncestor(parentComponent), 
+        // 创建对话框（parentComponent为null时创建无父窗口的对话框）
+        Window ownerWindow = parentComponent != null ? SwingUtilities.getWindowAncestor(parentComponent) : null;
+        JDialog dialog = new JDialog(ownerWindow, 
                                    LanguageManager.getString("dialog.headerSelection.title"), 
                                    Dialog.ModalityType.APPLICATION_MODAL);
         
@@ -258,8 +249,22 @@ public class ClipboardImporter {
         // 创建按钮面板
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
         
+        JButton selectAllButton = new JButton(LanguageManager.getString("button.selectAll"));
+        JButton deselectAllButton = new JButton(LanguageManager.getString("button.deselectAll"));
         JButton confirmButton = new JButton(LanguageManager.getString("button.confirm"));
         JButton cancelButton = new JButton(LanguageManager.getString("button.cancel"));
+        
+        selectAllButton.addActionListener(e -> {
+            for (int i = 0; i < table.getRowCount(); i++) {
+                table.setValueAt(true, i, 0);
+            }
+        });
+        
+        deselectAllButton.addActionListener(e -> {
+            for (int i = 0; i < table.getRowCount(); i++) {
+                table.setValueAt(false, i, 0);
+            }
+        });
         
         confirmButton.addActionListener(e -> {
             // 收集选中的请求头并添加到表格中
@@ -285,6 +290,8 @@ public class ClipboardImporter {
         
         cancelButton.addActionListener(e -> dialog.dispose());
         
+        buttonPanel.add(selectAllButton);
+        buttonPanel.add(deselectAllButton);
         buttonPanel.add(confirmButton);
         buttonPanel.add(cancelButton);
         mainPanel.add(buttonPanel, BorderLayout.SOUTH);
@@ -292,7 +299,7 @@ public class ClipboardImporter {
         dialog.getContentPane().add(mainPanel);
         dialog.pack();
         dialog.setResizable(false);
-        dialog.setLocationRelativeTo(SwingUtilities.getWindowAncestor(parentComponent));
+        dialog.setLocationRelativeTo(ownerWindow);
         dialog.setVisible(true);
     }
 }

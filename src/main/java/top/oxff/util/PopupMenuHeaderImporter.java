@@ -2,13 +2,15 @@ package top.oxff.util;
 
 import burp.BurpExtender;
 import top.oxff.model.HeaderItem;
+import top.oxff.service.PreferenceMatcher;
+import top.oxff.service.PreferenceService;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.UnsupportedFlavorException;
-import java.util.ArrayList;
+import java.util.*;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -59,9 +61,23 @@ public class PopupMenuHeaderImporter {
                     JOptionPane.WARNING_MESSAGE);
                 return;
             }
-            
+
+            // 使用PreferenceMatcher确定自动勾选的请求头（与ClipboardImporter逻辑一致）
+            List<String> candidateKeys = new ArrayList<>();
+            for (HeaderItem item : headerItems) {
+                candidateKeys.add(item.getKey());
+            }
+            Set<String> autoSelectedKeys;
+            if (PreferenceService.isInitialized()) {
+                List<String> persistedKeys = PreferenceService.getPersistedHeaderKeys();
+                List<String> builtinKeywords = PreferenceService.getBuiltinKeywords();
+                autoSelectedKeys = PreferenceMatcher.determineAutoSelectedKeys(candidateKeys, persistedKeys, builtinKeywords);
+            } else {
+                autoSelectedKeys = Collections.emptySet();
+            }
+
             // 显示选择对话框
-            showHeaderSelectionDialog(parentComponent, headerItems, callback);
+            showHeaderSelectionDialog(parentComponent, headerItems, callback, autoSelectedKeys);
             
         } catch (UnsupportedFlavorException e) {
             JOptionPane.showMessageDialog(parentComponent,
@@ -149,12 +165,15 @@ public class PopupMenuHeaderImporter {
      * @param parentComponent 父级组件
      * @param headerItems 可选择的请求头列表
      * @param callback 回调函数，用于处理用户选择的请求头
+     * @param autoSelectedKeys 自动勾选的键名集合
      */
     private static void showHeaderSelectionDialog(Component parentComponent, 
                                                   List<HeaderItem> headerItems, 
-                                                  Consumer<List<HeaderItem>> callback) {
-        // 创建对话框
-        JDialog dialog = new JDialog(SwingUtilities.getWindowAncestor(parentComponent), 
+                                                  Consumer<List<HeaderItem>> callback,
+                                                  Set<String> autoSelectedKeys) {
+        // 创建对话框（parentComponent为null时创建无父窗口的对话框）
+        Window ownerWindow = parentComponent != null ? SwingUtilities.getWindowAncestor(parentComponent) : null;
+        JDialog dialog = new JDialog(ownerWindow, 
                                    LanguageManager.getString("dialog.popupMenuSelection.title"), 
                                    Dialog.ModalityType.APPLICATION_MODAL);
         
@@ -175,10 +194,25 @@ public class PopupMenuHeaderImporter {
         
         // 创建数据
         Object[][] data = new Object[headerItems.size()][3];
-        
+
+        // 使用偏好匹配确定自动勾选
+        Set<String> matchedKeys;
+        if (autoSelectedKeys != null) {
+            matchedKeys = autoSelectedKeys;
+        } else {
+            // 如果没有传入，则实时从数据库获取偏好进行匹配
+            List<String> candidateKeys = new ArrayList<>();
+            for (HeaderItem item : headerItems) {
+                candidateKeys.add(item.getKey());
+            }
+            List<String> persistedKeys = PreferenceService.isInitialized() ? PreferenceService.getPersistedHeaderKeys() : Collections.<String>emptyList();
+            List<String> builtinKeywords = PreferenceService.isInitialized() ? PreferenceService.getBuiltinKeywords() : Collections.<String>emptyList();
+            matchedKeys = PreferenceMatcher.determineAutoSelectedKeys(candidateKeys, persistedKeys, builtinKeywords);
+        }
+
         for (int i = 0; i < headerItems.size(); i++) {
             HeaderItem item = headerItems.get(i);
-            data[i][0] = true; // 默认全部选中
+            data[i][0] = matchedKeys.contains(item.getKey());
             data[i][1] = item.getKey();
             data[i][2] = item.getValue();
         }
@@ -212,8 +246,22 @@ public class PopupMenuHeaderImporter {
         // 创建按钮面板
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
         
+        JButton selectAllButton = new JButton(LanguageManager.getString("button.selectAll"));
+        JButton deselectAllButton = new JButton(LanguageManager.getString("button.deselectAll"));
         JButton confirmButton = new JButton(LanguageManager.getString("button.confirm"));
         JButton cancelButton = new JButton(LanguageManager.getString("button.cancel"));
+
+        selectAllButton.addActionListener(e -> {
+            for (int i = 0; i < table.getRowCount(); i++) {
+                table.setValueAt(true, i, 0);
+            }
+        });
+
+        deselectAllButton.addActionListener(e -> {
+            for (int i = 0; i < table.getRowCount(); i++) {
+                table.setValueAt(false, i, 0);
+            }
+        });
         
         confirmButton.addActionListener(e -> {
             // 收集选中的请求头
@@ -221,13 +269,19 @@ public class PopupMenuHeaderImporter {
             for (int i = 0; i < table.getRowCount(); i++) {
                 Boolean isSelected = (Boolean) table.getValueAt(i, 0);
                 if (isSelected) {
-                    // 克隆原始HeaderItem并创建新的副本用于导入
                     HeaderItem originalItem = headerItems.get(i);
                     HeaderItem newItem = cloneHeaderItem(originalItem);
                     selectedItems.add(newItem);
                 }
             }
-            
+
+            // 持久化选中的请求头键名
+            if (PreferenceService.isInitialized()) {
+                for (HeaderItem item : selectedItems) {
+                    PreferenceService.addPersistedHeaderKey(item.getKey());
+                }
+            }
+
             // 调用回调函数处理选中的请求头
             if (!selectedItems.isEmpty()) {
                 callback.accept(selectedItems);
@@ -237,6 +291,8 @@ public class PopupMenuHeaderImporter {
         
         cancelButton.addActionListener(e -> dialog.dispose());
         
+        buttonPanel.add(selectAllButton);
+        buttonPanel.add(deselectAllButton);
         buttonPanel.add(confirmButton);
         buttonPanel.add(cancelButton);
         mainPanel.add(buttonPanel, BorderLayout.SOUTH);
@@ -244,7 +300,7 @@ public class PopupMenuHeaderImporter {
         dialog.getContentPane().add(mainPanel);
         dialog.pack();
         dialog.setResizable(false);
-        dialog.setLocationRelativeTo(SwingUtilities.getWindowAncestor(parentComponent));
+        dialog.setLocationRelativeTo(ownerWindow);
         dialog.setVisible(true);
     }
     

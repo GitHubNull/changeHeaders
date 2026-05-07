@@ -50,6 +50,9 @@ public class PersistedKeyPanel extends JPanel {
         buttonPanel.add(delBtn);
         buttonPanel.add(clearBtn);
         add(buttonPanel, BorderLayout.SOUTH);
+
+        // 注册偏好数据变更监听器，自动刷新表格
+        PreferenceService.addChangeListener(tableModel::refreshData);
     }
 
     private void onAdd(ActionEvent e) {
