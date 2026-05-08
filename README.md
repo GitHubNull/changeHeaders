@@ -4,7 +4,7 @@
 [![Burp Suite](https://img.shields.io/badge/Burp%20Suite-Extension-orange.svg)](https://portswigger.net/burp)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-[English Version](README_en.md) | [详细教程](doc/usage-guide.md) | [视频脚本](doc/video-script.md)
+[English Version](README_en.md) | [详细教程](doc/usage-guide.md) | [变更日志](doc/CHANGELOG.md) | [视频脚本](doc/video-script.md)
 
 ## 🌟 概述
 
@@ -101,6 +101,7 @@ python server.py
 
 - [详细使用教程](doc/usage-guide.md) - 完整的安装和使用指南
 - [测试服务文档](doc/test-server.md) - 测试HTTP服务详解
+- [变更日志](doc/CHANGELOG.md) - 版本变更记录
 - [视频宣传脚本](doc/video-script.md) - 视频制作参考
 
 ## 🤝 贡献
