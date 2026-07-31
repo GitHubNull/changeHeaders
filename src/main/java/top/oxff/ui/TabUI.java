@@ -12,6 +12,8 @@ import org.yaml.snakeyaml.representer.Representer;
 import top.oxff.control.HeaderItemController;
 import top.oxff.model.ExtenderConfig;
 import top.oxff.model.HeaderItem;
+import top.oxff.model.ResponseHeaderConfig;
+import top.oxff.service.ResponseHeaderService;
 import top.oxff.util.LanguageManager;
 import top.oxff.util.ClipboardImporter;
 import top.oxff.util.PopupMenuHeaderImporter;
@@ -81,6 +83,9 @@ public class TabUI extends JPanel {
 
     // 偏好管理面板
     PreferencePanel preferencePanel;
+
+    // 响应头管理面板
+    ResponseHeaderPanel responseHeaderPanel;
 
     // 请求头管理面板（包含north+center+south）
     JPanel headerManagementPanel;
@@ -410,6 +415,10 @@ public class TabUI extends JPanel {
         mainTabbedPane = new JTabbedPane();
         mainTabbedPane.addTab(LanguageManager.getString("tab.headerManagement"), headerManagementPanel);
 
+        // 创建响应头管理面板
+        responseHeaderPanel = new ResponseHeaderPanel();
+        mainTabbedPane.addTab(LanguageManager.getString("tab.responseHeaderManagement"), responseHeaderPanel);
+
         // 创建偏好管理面板
         preferencePanel = new PreferencePanel();
         mainTabbedPane.addTab(LanguageManager.getString("tab.preferenceManagement"), preferencePanel);
@@ -438,8 +447,20 @@ public class TabUI extends JPanel {
         extenderConfig.setPopupMenuEnable(popupMenuCheckbox.isSelected());
         extenderConfig.setHeaderItemList(HeaderItemController.getHeaderItemList());
         extenderConfig.setKeyMap(HeaderItemController.getKeyMap());
+        extenderConfig.setResponseHeaderConfig(ResponseHeaderService.buildConfig());
 
         return extenderConfig;
+    }
+
+    /**
+     * 回填响应头配置到界面
+     * @param responseHeaderConfig 响应头配置，为空时保持默认
+     */
+    public void loadResponseHeaderConfig(ResponseHeaderConfig responseHeaderConfig) {
+        if (null == responseHeaderConfig) {
+            return;
+        }
+        responseHeaderPanel.loadFrom(responseHeaderConfig);
     }
     
     /**
@@ -497,7 +518,11 @@ public class TabUI extends JPanel {
 
         // 更新Tab标题
         mainTabbedPane.setTitleAt(0, LanguageManager.getString("tab.headerManagement"));
-        mainTabbedPane.setTitleAt(1, LanguageManager.getString("tab.preferenceManagement"));
+        mainTabbedPane.setTitleAt(1, LanguageManager.getString("tab.responseHeaderManagement"));
+        mainTabbedPane.setTitleAt(2, LanguageManager.getString("tab.preferenceManagement"));
+
+        // 更新响应头管理面板文本
+        responseHeaderPanel.updateUIText();
 
         // 更新偏好管理面板文本
         preferencePanel.updateUIText();
@@ -562,6 +587,7 @@ public class TabUI extends JPanel {
                 Representer representer = new Representer(options);
                 representer.addClassTag(ExtenderConfig.class, Tag.MAP);
                 representer.addClassTag(HeaderItem.class, Tag.MAP);
+                representer.addClassTag(ResponseHeaderConfig.class, Tag.MAP);
 
                 Yaml yaml = new Yaml(representer);
                 String yamlString = yaml.dump(config);
@@ -692,6 +718,10 @@ public class TabUI extends JPanel {
                 configDesc.addPropertyParameters("headerItemList", HeaderItem.class);
                 constructor.addTypeDescription(configDesc);
 
+                TypeDescription respDesc = new TypeDescription(ResponseHeaderConfig.class);
+                respDesc.addPropertyParameters("responseToolFlags", Integer.class);
+                constructor.addTypeDescription(respDesc);
+
                 Yaml yaml = new Yaml(constructor);
                 ExtenderConfig config = yaml.load(yamlString.toString());
                 
@@ -775,6 +805,12 @@ public class TabUI extends JPanel {
             // 设置键映射
             if (config.getKeyMap() != null) {
                 tableModel.setKeyMap(config.getKeyMap());
+            }
+
+            // 应用响应头配置，旧版本配置文件无该节点时保持当前默认
+            if (config.getResponseHeaderConfig() != null) {
+                ResponseHeaderService.loadConfig(config.getResponseHeaderConfig());
+                responseHeaderPanel.loadFrom(ResponseHeaderService.buildConfig());
             }
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(this, 

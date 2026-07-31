@@ -17,4 +17,5 @@ public class ExtenderConfig {
     private boolean popupMenuEnable;
     private List<HeaderItem> headerItemList;
     private Map<String, Integer> keyMap;
+    private ResponseHeaderConfig responseHeaderConfig;
 }

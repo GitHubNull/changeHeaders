@@ -7,6 +7,19 @@
 
 ---
 
+## [3.2.0] - 2026-07-31
+
+### 新增
+- **响应头管理标签页**：新增第二个标签页"响应头管理"，通过可扩展的 handler 注册表 + 不可变配置快照实现响应头改写框架
+- **Date 字段时区换算**：支持解析 RFC1123 / RFC850 / asctime 格式原始 Date，保持时间点不变换算到目标时区后按选定格式输出
+- **双格式模式**：HTTP 兼容（RFC1123）与自定义 pattern 两种输出模式可切换，实时预览当前时间渲染效果
+- **独立生效范围**：响应头工具勾选（proxy/repeater/intruder/scanner/extender）与请求头 `TOOL_FLAGS` 完全隔离
+- **缺失补充**：支持响应中无 Date 时自动追加当前时间（可选开关）
+- **国际化**：响应头管理页全部文案支持中英文切换
+- **持久化**：响应头配置以 `responseHeaderConfig` 节点写入 YAML，向后兼容旧版无该节点的配置文件
+
+---
+
 ## [3.1.1] - 2026-05-08
 
 ### 新增
@@ -130,6 +143,7 @@
 
 ---
 
+[3.2.0]: https://github.com/GitHubNull/changeHeaders/releases/tag/v3.2.0
 [3.1.1]: https://github.com/GitHubNull/changeHeaders/releases/tag/v3.1.1
 [3.1.0]: https://github.com/GitHubNull/changeHeaders/releases/tag/v3.1.0
 [3.0.0]: https://github.com/GitHubNull/changeHeaders/releases/tag/v3.0.0

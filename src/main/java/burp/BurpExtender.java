@@ -12,7 +12,9 @@ import top.oxff.control.HttpProcess;
 import top.oxff.model.ExtenderConfig;
 import top.oxff.model.HeaderItem;
 import top.oxff.model.HeaderItemTableModel;
+import top.oxff.model.ResponseHeaderConfig;
 import top.oxff.service.PreferenceService;
+import top.oxff.service.ResponseHeaderService;
 import top.oxff.ui.TabUI;
 
 import javax.swing.*;
@@ -101,6 +103,7 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
         Representer representer = new Representer(options);
         representer.addClassTag(ExtenderConfig.class, Tag.MAP);
         representer.addClassTag(HeaderItem.class, Tag.MAP);
+        representer.addClassTag(ResponseHeaderConfig.class, Tag.MAP);
 
         Yaml yaml = new Yaml(representer);
         String yamlString = yaml.dump(extenderConfig);
@@ -121,6 +124,10 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
             configDesc.addPropertyParameters("headerItemList", HeaderItem.class);
             constructor.addTypeDescription(configDesc);
 
+            TypeDescription respDesc = new TypeDescription(ResponseHeaderConfig.class);
+            respDesc.addPropertyParameters("responseToolFlags", Integer.class);
+            constructor.addTypeDescription(respDesc);
+
             Yaml yaml = new Yaml(constructor);
             ExtenderConfig config = yaml.load(yamlString);
 
@@ -133,6 +140,11 @@ public class BurpExtender implements IBurpExtender, ITab, IExtensionStateListene
             }
             if(null != config.getToolFlags() && !config.getToolFlags().isEmpty()){
                 TOOL_FLAGS.addAll(config.getToolFlags());
+            }
+            // 旧版本配置无响应头节点时保持默认关闭状态
+            if (null != config.getResponseHeaderConfig()) {
+                ResponseHeaderService.loadConfig(config.getResponseHeaderConfig());
+                tabUI.loadResponseHeaderConfig(ResponseHeaderService.buildConfig());
             }
         }catch (Exception e){
             stdout.println("parse yaml object error: " + e.getMessage());
