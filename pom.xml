@@ -6,7 +6,7 @@
 
     <groupId>top.oxff</groupId>
     <artifactId>changeHeaders</artifactId>
-    <version>3.3.0</version>
+    <version>3.4.0</version>
 
     <repositories>
         <repository>

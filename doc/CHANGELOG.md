@@ -7,6 +7,21 @@
 
 ---
 
+## [3.4.0] - 2026-07-31 21:38:00
+
+### 新增
+- **Last-Modified 字段本地化**：新增"响应头管理"下的 Last-Modified 子标签页，支持解析 RFC1123 / RFC850 / asctime 格式原始 Last-Modified，保持时间点不变换算到目标时区后按选定格式输出
+- **双格式模式**：Last-Modified 支持 HTTP 兼容（RFC1123）与自定义 pattern，自定义模式下随插件语言环境本地化（中/英星期、月份等），实时预览渲染效果
+- **缺失补充偏移**：响应缺失 Last-Modified 时可按"当前时间 + 可配置偏移分钟数"（默认 0，允许负值构造过去修改时刻）自动补充
+- **修改时刻保护**：对无法解析的原始取值一律原样保留，避免虚构资源修改时刻破坏条件请求与缓存协商
+- **国际化**：Last-Modified 相关全部文案支持中英文切换（messages / messages_en / messages_zh / messages_zh_CN 四份资源同步）
+
+### 变更
+- **处理器复用**：`LastModifiedHeaderHandler` 复用 `AbstractHttpDateHeaderHandler`、`LastModifiedHeaderPanel` 复用 `HttpDateHeaderPanel`，与 Date / Expires 结构完全一致
+- **持久化扩展**：`responseHeaderConfig` 节点新增 `lastModified*` 字段，向后兼容旧版无该字段的配置文件
+
+---
+
 ## [3.3.0] - 2026-07-31 20:48:32
 
 ### 新增

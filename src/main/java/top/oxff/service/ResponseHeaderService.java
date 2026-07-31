@@ -32,6 +32,7 @@ public class ResponseHeaderService {
     static {
         HANDLERS.add(DateHeaderHandler.getInstance());
         HANDLERS.add(ExpiresHeaderHandler.getInstance());
+        HANDLERS.add(LastModifiedHeaderHandler.getInstance());
     }
 
     private ResponseHeaderService() {
@@ -116,6 +117,7 @@ public class ResponseHeaderService {
             // 无法定位到具体是哪个字段的格式非法，两个字段一并回退，避免加载后反复抛错
             fallback.setDateFormatMode(ResponseHeaderConfig.FORMAT_MODE_RFC1123);
             fallback.setExpiresFormatMode(ResponseHeaderConfig.FORMAT_MODE_RFC1123);
+            fallback.setLastModifiedFormatMode(ResponseHeaderConfig.FORMAT_MODE_RFC1123);
             try {
                 applyConfig(fallback);
             } catch (Exception ignored) {
@@ -163,6 +165,12 @@ public class ResponseHeaderService {
         target.setExpiresZoneId(source.getExpiresZoneId());
         target.setExpiresAddIfMissing(source.isExpiresAddIfMissing());
         target.setExpiresOffsetMinutes(source.getExpiresOffsetMinutes());
+        target.setLastModifiedEnabled(source.isLastModifiedEnabled());
+        target.setLastModifiedFormatMode(source.getLastModifiedFormatMode());
+        target.setLastModifiedPattern(source.getLastModifiedPattern());
+        target.setLastModifiedZoneId(source.getLastModifiedZoneId());
+        target.setLastModifiedAddIfMissing(source.isLastModifiedAddIfMissing());
+        target.setLastModifiedOffsetMinutes(source.getLastModifiedOffsetMinutes());
         return target;
     }
 }

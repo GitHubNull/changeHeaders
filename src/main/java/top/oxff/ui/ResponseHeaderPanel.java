@@ -29,6 +29,7 @@ public class ResponseHeaderPanel extends JPanel {
     private JTabbedPane subTabbedPane;
     private DateHeaderPanel dateHeaderPanel;
     private ExpiresHeaderPanel expiresHeaderPanel;
+    private LastModifiedHeaderPanel lastModifiedHeaderPanel;
 
     private JButton resetBtn;
 
@@ -65,6 +66,8 @@ public class ResponseHeaderPanel extends JPanel {
         subTabbedPane.addTab(LanguageManager.getString("tab.responseDate"), dateHeaderPanel);
         expiresHeaderPanel = new ExpiresHeaderPanel(this::applyToService);
         subTabbedPane.addTab(LanguageManager.getString("tab.responseExpires"), expiresHeaderPanel);
+        lastModifiedHeaderPanel = new LastModifiedHeaderPanel(this::applyToService);
+        subTabbedPane.addTab(LanguageManager.getString("tab.responseLastModified"), lastModifiedHeaderPanel);
         add(subTabbedPane, BorderLayout.CENTER);
 
         // 底部：恢复默认
@@ -89,6 +92,7 @@ public class ResponseHeaderPanel extends JPanel {
         config.setResponseToolFlags(collectToolFlags());
         dateHeaderPanel.fillConfig(config);
         expiresHeaderPanel.fillConfig(config);
+        lastModifiedHeaderPanel.fillConfig(config);
         return config;
     }
 
@@ -119,6 +123,7 @@ public class ResponseHeaderPanel extends JPanel {
 
         dateHeaderPanel.loadFrom(config);
         expiresHeaderPanel.loadFrom(config);
+        lastModifiedHeaderPanel.loadFrom(config);
         refreshEnabledState();
     }
 
@@ -133,8 +138,10 @@ public class ResponseHeaderPanel extends JPanel {
         resetBtn.setText(LanguageManager.getString("button.resetResponseDefaults"));
         subTabbedPane.setTitleAt(0, LanguageManager.getString("tab.responseDate"));
         subTabbedPane.setTitleAt(1, LanguageManager.getString("tab.responseExpires"));
+        subTabbedPane.setTitleAt(2, LanguageManager.getString("tab.responseLastModified"));
         dateHeaderPanel.updateUIText();
         expiresHeaderPanel.updateUIText();
+        lastModifiedHeaderPanel.updateUIText();
 
         // 语言变化会影响自定义格式的输出，重新提交一次配置并刷新预览
         applyToService();
@@ -158,6 +165,7 @@ public class ResponseHeaderPanel extends JPanel {
         // 每个子面板独立渲染预览，避免一个字段的非法格式污染另一个字段的预览
         dateHeaderPanel.showPreview(config);
         expiresHeaderPanel.showPreview(config);
+        lastModifiedHeaderPanel.showPreview(config);
     }
 
     private void registerListeners() {

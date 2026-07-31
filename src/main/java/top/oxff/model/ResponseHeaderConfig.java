@@ -32,6 +32,11 @@ public class ResponseHeaderConfig {
     public static final int DEFAULT_EXPIRES_OFFSET_MINUTES = 60;
 
     /**
+     * Last-Modified字段缺失补充时的默认偏移分钟数，默认取当前时间
+     */
+    public static final int DEFAULT_LAST_MODIFIED_OFFSET_MINUTES = 0;
+
+    /**
      * 响应头改写总开关
      */
     private boolean enabled;
@@ -95,4 +100,34 @@ public class ResponseHeaderConfig {
      * 补充Expires时相对当前时间的偏移分钟数，允许为负表示已过期时刻
      */
     private int expiresOffsetMinutes = DEFAULT_EXPIRES_OFFSET_MINUTES;
+
+    /**
+     * 是否启用Last-Modified字段改写
+     */
+    private boolean lastModifiedEnabled;
+
+    /**
+     * Last-Modified字段输出格式模式
+     */
+    private String lastModifiedFormatMode = FORMAT_MODE_RFC1123;
+
+    /**
+     * Last-Modified字段自定义格式
+     */
+    private String lastModifiedPattern = DEFAULT_DATE_PATTERN;
+
+    /**
+     * Last-Modified字段目标时区ID，为空表示跟随插件运行环境的本地系统时区
+     */
+    private String lastModifiedZoneId;
+
+    /**
+     * 响应中不存在Last-Modified时是否补充该头
+     */
+    private boolean lastModifiedAddIfMissing;
+
+    /**
+     * 补充Last-Modified时相对当前时间的偏移分钟数，允许为负表示过去时刻
+     */
+    private int lastModifiedOffsetMinutes = DEFAULT_LAST_MODIFIED_OFFSET_MINUTES;
 }
