@@ -29,9 +29,6 @@ import java.awt.event.MouseEvent;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
-import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
-
 import static burp.BurpExtender.TOOL_FLAGS;
 import static burp.BurpExtender.tableModel;
 

@@ -31,6 +31,7 @@ public class ResponseHeaderService {
 
     static {
         HANDLERS.add(DateHeaderHandler.getInstance());
+        HANDLERS.add(ExpiresHeaderHandler.getInstance());
     }
 
     private ResponseHeaderService() {
@@ -112,7 +113,9 @@ public class ResponseHeaderService {
         } catch (Exception e) {
             BurpExtender.logError(LanguageManager.getString("error.response.date.pattern", e.getMessage()));
             ResponseHeaderConfig fallback = copyOf(config);
+            // 无法定位到具体是哪个字段的格式非法，两个字段一并回退，避免加载后反复抛错
             fallback.setDateFormatMode(ResponseHeaderConfig.FORMAT_MODE_RFC1123);
+            fallback.setExpiresFormatMode(ResponseHeaderConfig.FORMAT_MODE_RFC1123);
             try {
                 applyConfig(fallback);
             } catch (Exception ignored) {
@@ -154,6 +157,12 @@ public class ResponseHeaderService {
         target.setDatePattern(source.getDatePattern());
         target.setDateZoneId(source.getDateZoneId());
         target.setDateAddIfMissing(source.isDateAddIfMissing());
+        target.setExpiresEnabled(source.isExpiresEnabled());
+        target.setExpiresFormatMode(source.getExpiresFormatMode());
+        target.setExpiresPattern(source.getExpiresPattern());
+        target.setExpiresZoneId(source.getExpiresZoneId());
+        target.setExpiresAddIfMissing(source.isExpiresAddIfMissing());
+        target.setExpiresOffsetMinutes(source.getExpiresOffsetMinutes());
         return target;
     }
 }

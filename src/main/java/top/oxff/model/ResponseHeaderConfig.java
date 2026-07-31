@@ -27,6 +27,11 @@ public class ResponseHeaderConfig {
     public static final String DEFAULT_DATE_PATTERN = "yyyy-MM-dd HH:mm:ss";
 
     /**
+     * Expires字段缺失补充时的默认偏移分钟数
+     */
+    public static final int DEFAULT_EXPIRES_OFFSET_MINUTES = 60;
+
+    /**
      * 响应头改写总开关
      */
     private boolean enabled;
@@ -60,4 +65,34 @@ public class ResponseHeaderConfig {
      * 响应中不存在Date时是否补充该头
      */
     private boolean dateAddIfMissing;
+
+    /**
+     * 是否启用Expires字段改写
+     */
+    private boolean expiresEnabled;
+
+    /**
+     * Expires字段输出格式模式
+     */
+    private String expiresFormatMode = FORMAT_MODE_RFC1123;
+
+    /**
+     * Expires字段自定义格式
+     */
+    private String expiresPattern = DEFAULT_DATE_PATTERN;
+
+    /**
+     * Expires字段目标时区ID，为空表示跟随插件运行环境的本地系统时区
+     */
+    private String expiresZoneId;
+
+    /**
+     * 响应中不存在Expires时是否补充该头
+     */
+    private boolean expiresAddIfMissing;
+
+    /**
+     * 补充Expires时相对当前时间的偏移分钟数，允许为负表示已过期时刻
+     */
+    private int expiresOffsetMinutes = DEFAULT_EXPIRES_OFFSET_MINUTES;
 }

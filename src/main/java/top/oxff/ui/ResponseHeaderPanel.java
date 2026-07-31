@@ -28,6 +28,7 @@ public class ResponseHeaderPanel extends JPanel {
 
     private JTabbedPane subTabbedPane;
     private DateHeaderPanel dateHeaderPanel;
+    private ExpiresHeaderPanel expiresHeaderPanel;
 
     private JButton resetBtn;
 
@@ -62,6 +63,8 @@ public class ResponseHeaderPanel extends JPanel {
         subTabbedPane = new JTabbedPane();
         dateHeaderPanel = new DateHeaderPanel(this::applyToService);
         subTabbedPane.addTab(LanguageManager.getString("tab.responseDate"), dateHeaderPanel);
+        expiresHeaderPanel = new ExpiresHeaderPanel(this::applyToService);
+        subTabbedPane.addTab(LanguageManager.getString("tab.responseExpires"), expiresHeaderPanel);
         add(subTabbedPane, BorderLayout.CENTER);
 
         // 底部：恢复默认
@@ -85,6 +88,7 @@ public class ResponseHeaderPanel extends JPanel {
         config.setEnabled(enableCheckbox.isSelected());
         config.setResponseToolFlags(collectToolFlags());
         dateHeaderPanel.fillConfig(config);
+        expiresHeaderPanel.fillConfig(config);
         return config;
     }
 
@@ -114,6 +118,7 @@ public class ResponseHeaderPanel extends JPanel {
         }
 
         dateHeaderPanel.loadFrom(config);
+        expiresHeaderPanel.loadFrom(config);
         refreshEnabledState();
     }
 
@@ -127,7 +132,9 @@ public class ResponseHeaderPanel extends JPanel {
         extenderCheckbox.setText(LanguageManager.getString("checkbox.extender"));
         resetBtn.setText(LanguageManager.getString("button.resetResponseDefaults"));
         subTabbedPane.setTitleAt(0, LanguageManager.getString("tab.responseDate"));
+        subTabbedPane.setTitleAt(1, LanguageManager.getString("tab.responseExpires"));
         dateHeaderPanel.updateUIText();
+        expiresHeaderPanel.updateUIText();
 
         // 语言变化会影响自定义格式的输出，重新提交一次配置并刷新预览
         applyToService();
@@ -144,10 +151,13 @@ public class ResponseHeaderPanel extends JPanel {
         ResponseHeaderConfig config = buildConfig();
         try {
             ResponseHeaderService.applyConfig(config);
-            dateHeaderPanel.showPreview(config);
-        } catch (Exception e) {
-            dateHeaderPanel.showPatternError(e.getMessage());
+        } catch (Exception ignored) {
+            // 校验失败时保留上一次生效的配置，非法格式由对应子面板的预览行提示
         }
+
+        // 每个子面板独立渲染预览，避免一个字段的非法格式污染另一个字段的预览
+        dateHeaderPanel.showPreview(config);
+        expiresHeaderPanel.showPreview(config);
     }
 
     private void registerListeners() {
